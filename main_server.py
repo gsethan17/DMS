@@ -6,12 +6,14 @@ from server_recv import *
 serversocket=socket.socket()
 
 HOST = socket.gethostname()
+print("HOST NAME", HOST)
 ip_addr = socket.gethostbyname(HOST)
+print("IP ADDR", ip_addr)
 port = 22222
 ThreadCount = 0
 
 try:
-    serversocket.bind((ip_addr, port))
+    serversocket.bind(("113.198.211.159", port))
 except socket.error as e:
     print(str(e))
 print("Waiting for connection")
