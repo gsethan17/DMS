@@ -8,8 +8,9 @@ import pickle
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print(client_socket)
 ipaddr = socket.gethostbyname(socket.gethostname())
-client_socket.bind((ipaddr, 63333))
-client_socket.connect(('203.246.114.193', 22222))
+client_socket.bind(('10.30.88.121', 63333))
+print(client_socket)
+client_socket.connect(('113.198.211.159', 22222))
 connection = client_socket.makefile('wb')
 
 cam = cv2.VideoCapture(0)
