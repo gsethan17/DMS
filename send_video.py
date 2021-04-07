@@ -28,6 +28,7 @@ while True:
 
 
     if ret:
+        cv2.imshow('image', frame)
         result, frame = cv2.imencode('.jpg', frame, encode_param)
         print(type(frame))
         print(frame.shape)
