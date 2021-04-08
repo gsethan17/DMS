@@ -42,6 +42,7 @@ while True:
 
         key = cv2.waitKey(1) & 0xff
         if key == ord('q'):
-            client_socket.close()
+            break
 
+client_socket.close()
 cam.release()
