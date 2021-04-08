@@ -30,12 +30,19 @@ while True:
     if (client_port==63333):
         print("Image Data")
         start_new_thread(get_video_stream,(client,))
+    
+    elif (client_port==63331) :
+        print("Audio Data")
+        start_new_thread(get_audio_stream, (client,))
+    
     else:
         print("Serial Data")
         start_new_thread(get_CAN_signal,(client,))
 
     ThreadCount+=1
     print("ThreadNumber="+str(ThreadCount))
+
+
 serversocket.close()
 
 
