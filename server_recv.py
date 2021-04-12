@@ -2,8 +2,16 @@ import struct
 import pickle
 import cv2
 import numpy as np
+from scipy.io.wavfile import write
+
+def write_video(frame)
 
 def get_video_stream(conn):
+    fps = 10
+    video_path = '../resource/video/DIVX.avi'
+    fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
+    out = cv2.VideoWriter(video_path, fcc, fps, (640, 480))
+
     data = b""
     payload_size = struct.calcsize(">L")
     # print("payload_size: {}".format(payload_size))
@@ -27,6 +35,11 @@ def get_video_stream(conn):
         print(frame.shape)
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         print(frame.shape)
+
+        out.write(frame)
+    out.release()
+
+
         #cv2.imshow('ImageWindow', frame)
         #cv2.waitKey(1)
 
@@ -37,6 +50,8 @@ def get_CAN_signal(conn):
         received = str(data, encoding='utf-8')
         print(received)
 
+def save_wav(data, save_path = './record.wav', RATE = 44100) :
+    write(save_path, RATE, data.astype(np.int16))
 
 def get_audio_stream(conn) :
     data = b""
@@ -57,3 +72,6 @@ def get_audio_stream(conn) :
         wave = pickle.loads(wave_data, fix_imports=True, encoding="bytes")
         wave = np.fromstring(wave, dtype = np.int16)
         print("received {} wavedata".format(len(wave)))
+
+        # save wave file
+        save_wav(wave)
