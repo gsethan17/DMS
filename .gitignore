@@ -1,3 +1,5 @@
 *.wav
+*.avi
+*.csv
 /.idea
 __pyc*
