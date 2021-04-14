@@ -23,11 +23,14 @@ img_counter = 0
 
 encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 
+FPS = 10
+
 while True:
     ret, frame = cam.read()
+    current_time = time.time() - prev_time
 
-
-    if ret:
+    if (ret is True) and (current_time > 1./FPS):
+        prev_time = time.time()
         cv2.imshow('image', frame)
         result, frame = cv2.imencode('.jpg', frame, encode_param)
         print(type(frame))
@@ -37,7 +40,7 @@ while True:
         size = len(data)
         # print("{}: {}".format(img_counter, size))
         client_socket.sendall(struct.pack(">L", size) + data)
-        time.sleep(0.1)
+        # time.sleep(0.1)
         img_counter += 1
 
         key = cv2.waitKey(1) & 0xff
