@@ -2,32 +2,19 @@ import struct
 import pickle
 import cv2
 import numpy as np
-<<<<<<< HEAD
 import pandas as pd
 from scipy.io.wavfile import write
-
-def get_video_stream(conn):
-    FILE_OUTPUT = 'log/video.avi'
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWriter(FILE_OUTPUT, fourcc, 25.0,(640,480))
-=======
-from scipy.io.wavfile import write
-
-def write_video(frame)
 
 def get_video_stream(conn):
     fps = 10
     video_path = '../resource/video/DIVX.avi'
     fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
     out = cv2.VideoWriter(video_path, fcc, fps, (640, 480))
-
->>>>>>> 6e1127aa772a0c46412941149027e9dd6c8998a9
     data = b""
     payload_size = struct.calcsize(">L")
     # print("payload_size: {}".format(payload_size))
     while True:
 
-<<<<<<< HEAD
         try:
             while len(data) < payload_size:
                 # print("Recv: {}".format(len(data)))
@@ -51,19 +38,6 @@ def get_video_stream(conn):
             #print(frame.shape)
             #cv2.imshow('ImageWindow', frame)
             #cv2.waitKey(1)
-=======
-        frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
-        print(frame.shape)
-        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-        print(frame.shape)
-
-        out.write(frame)
-    out.release()
-
-
-        #cv2.imshow('ImageWindow', frame)
-        #cv2.waitKey(1)
->>>>>>> 6e1127aa772a0c46412941149027e9dd6c8998a9
 
         except Exception as e:
             conn.close()
@@ -130,7 +104,6 @@ def get_audio_stream(conn) :
     data = b""
     payload_size = struct.calcsize("Q")
     while True :
-<<<<<<< HEAD
         try :
             while len(data) < payload_size:
                 data += conn.recv(4096)
@@ -165,24 +138,3 @@ def get_audio_stream(conn) :
     print("++++++++++++++++++++++++++++++++++++++")
     print("[INFO] Receiving Audio Stream Finisehd")
     print("[INFO] Saved Audio Stream")
-
-=======
-        while len(data) < payload_size:
-            data += conn.recv(4096)
-
-        packed_msg_size = data[:payload_size]
-        data = data[payload_size:]
-        msg_size = struct.unpack("Q", packed_msg_size)[0]
-
-        while len(data) < msg_size :
-            data += conn.recv(4096)
-        wave_data = data[:msg_size]
-        data = data[msg_size:]
-        print(len(data))
-        wave = pickle.loads(wave_data, fix_imports=True, encoding="bytes")
-        wave = np.fromstring(wave, dtype = np.int16)
-        print("received {} wavedata".format(len(wave)))
-
-        # save wave file
-        save_wav(wave)
->>>>>>> 6e1127aa772a0c46412941149027e9dd6c8998a9
