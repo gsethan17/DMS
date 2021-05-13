@@ -19,59 +19,50 @@ from scipy.io.wavfile import write
 
 lock = threading.Lock()
 def sync_thread():
-    global thread_count, TOTAL_THREAD_NUM
+    global thread_count, TOTAL_THREADS_NUM
 
     lock.acquire()
     try:
         thread_count += 1
     finally:
         lock.release()
-    while thread_count != TOTAL_THREAD_NUM:
+    while thread_count != TOTAL_THREADS_NUM:
         pass
 
 def receive_CAN(d_name, db, can_bus, stop):
     print(f"'{d_name}' thread started.")
 
-    esp = sas = whl = 0.
-    for message in db.messages:
-        if message.name == 'ESP12':
-            esp_frame_id = message.frame_id
-        elif message.name == 'SAS11':
-            sas_frame_id = message.frame_id
-        elif message.name == 'WHL_SPD11':
-            whl_frame_id = message.frame_id
-
     df = pd.DataFrame(columns=['timestamp'])
+    can_monitoring = dict()
 
     sync_thread()
 
     start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
     while(True):
         try:
-            message = can_bus.recv()
-            if message.arbitration_id == esp_frame_id:
-                # 210511: 추후 esp를 can_dict와 같은 일반화 변수로 변경하면 좋을 듯
-                esp = db.decode_message(message.arbitration_id, message.data)
-                esp['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
-                df = df.append(esp, ignore_index=True)
-            elif message.arbitration_id == sas_frame_id:
-                sas = db.decode_message(message.arbitration_id, message.data)
-                sas['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
-                df = df.append(sas, ignore_index=True)
-            elif message.arbitration_id == whl_frame_id:
-                whl = db.decode_message(message.arbitration_id, message.data)
-                whl['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
-                df = df.append(whl, ignore_index=True)
+            can_msg = can_bus.recv()
+            for db_msg in db.messages:
+                if can_msg.arbitration_id == db_msg.frame_id:
+                    can_dict = db.decode_message(can_msg.arbitration_id, can_msg.data)
+                    can_dict['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
+                    df = df.append(can_dict, ignore_index=True)
 
-            print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(esp['CYL_PRES'], sas['SAS_Angle'], whl['WHL_SPD_FL']), end='\r')
+                    ## For monitoring
+                    if db_msg.name == 'ESP12':
+                        can_monitoring['ESP12'] = can_dict['CYL_PRES']
+                    elif db_msg.name == 'SAS11':
+                        can_monitoring['SAS11'] = can_dict['SAS_Angle']
+                    elif db_msg.name == 'WHL_SPD11':
+                        can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
+            print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
 
             if stop():
                 break
             
         except:
-            # print("CAN failed.")
             if stop():
                 break
+
     df.to_csv(f"../DMS_dataset/can/{start_time}.csv")
     print(f"'{d_name}' thread terminated.")
 
@@ -89,7 +80,7 @@ def receive_video(d_name, stop):
 
     past_cur_time = 0
     cap = cv2.VideoCapture(0)
-    i=0
+    i = 0
 
     sync_thread()
 
@@ -100,28 +91,28 @@ def receive_video(d_name, stop):
         title = cur_time + '_' +str(i)
 
         if cur_time == past_cur_time:
-            i+=1
+            i += 1
         else:
-            i=0
+            i = 0
 
         ret, frame = cap.read()
         if ret:
             cv2.imshow('video_stream', frame)
-            cv2.imwrite(save_dir+'/' + title + '.jpg', frame)
+            cv2.imwrite(save_dir + '/' + title + '.jpg', frame)
             past_cur_time = cur_time
 
             if stop():
                 break
-
         else:
             print('Video receiving error.')
 
     cap.release()
     cv2.destroyAllWindows()
+
     print(f"'{d_name}' thread terminated.")
 
 
-def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, duration, stop):
+def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
     print(f"'{d_name}' thread started.")
 
     p = pyaudio.PyAudio()
@@ -159,6 +150,6 @@ def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, duration, stop):
     stream.stop_stream()
     stream.close()
     p.terminate()
-    write(f"../DMS_dataset/audio/{start_time}.wav", RATE, data.astype(np.int16))
 
+    write(f"../DMS_dataset/audio/{start_time}.wav", RATE, data.astype(np.int16))
     print(f"'{d_name}' thread terminated.")
