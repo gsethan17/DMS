@@ -100,11 +100,11 @@ def receive_video(d_name, stop):
             cv2.imshow('video_stream', frame)
             cv2.imwrite(save_dir + '/' + title + '.jpg', frame)
             past_cur_time = cur_time
-
-            if stop():
-                break
         else:
             print('Video receiving error.')
+        
+        if stop():
+                break
 
     cap.release()
     cv2.destroyAllWindows()
