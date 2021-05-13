@@ -77,4 +77,4 @@ if __name__ == '__main__' :
     
 #     audio_stream('113.198.211.159', 22222)
     data = get_audio()
-    save_wav()
+    save_wav(data)
