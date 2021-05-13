@@ -75,4 +75,6 @@ def audio_stream(host_ip, port, FORMAT=pyaudio.paInt16, RATE = 44100, CHANNELS =
 
 if __name__ == '__main__' :
     
-    audio_stream('113.198.211.159', 22222)
+#     audio_stream('113.198.211.159', 22222)
+    data = get_audio()
+    save_wav()
