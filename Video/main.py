@@ -1,3 +1,4 @@
+## Test file for 'receive_video' thread
 import threading
 from receive_video import receive_video
 
