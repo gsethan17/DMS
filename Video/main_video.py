@@ -2,11 +2,11 @@
 import threading
 from receive_video import receive_video
 
-TOTAL_THREADS_NUM = 1
-thread_count = 0
+SINGLE_THREAD = 0
 
 def video_main():
     print("Main thread started.")
+    SINGLE_THREAD = 1
 
     ### Thread setting ###
     stop_threads = False

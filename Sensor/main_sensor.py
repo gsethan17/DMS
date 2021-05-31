@@ -1,27 +1,22 @@
-## Test file for 'receive_audio' thread
+## Test file for 'receive_sensor' thread
 import threading
-import pyaudio
-from receive_audio import receive_audio
+from receive_sensor import receive_sensor
 
-TOTAL_THREADS_NUM = 1
-thread_count = 0
+SINGLE_THREAD = 0
 
-def audio_main():
+def sensor_main():
     print("Main thread started.")
-
-    ### Audio setting ###
-    FORMAT = pyaudio.paInt16
-    RATE = 44100
-    CHANNELS = 1
-    CHUNK = 1024
+    SINGLE_THREAD = 1
+    
+    ### Sensor setting ###
 
     ### Thread setting ###
     stop_threads = False
     workers = []
-    data_names = ['audio']
-    thread_functions = [receive_audio]
+    data_names = ['sensor']
+    thread_functions = [receive_sensor]
     func_args = {
-                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
+                 'sensor': (),
                  }
     
     ### Thread generation ###
@@ -43,4 +38,4 @@ def audio_main():
 
     
 if __name__ == "__main__":
-    audio_main()
+    sensor_main()

@@ -1,5 +1,5 @@
+# from main_audio import SINGLE_THREAD
 from main import TOTAL_THREADS_NUM, thread_count
-
 import threading
 import time
 import numpy as np
@@ -21,8 +21,12 @@ def sync_thread():
         pass
 
 def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
-    print(f"'{d_name}' thread started.")
+    from .main_audio import SINGLE_THREAD
 
+    # global SINGLE_THREAD
+
+    print(f"'{d_name}' thread started.")
+    
     p = pyaudio.PyAudio()
     stream = p.open(
             format = FORMAT,
@@ -35,7 +39,8 @@ def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
     data = []
     flag = False
 
-    sync_thread()
+    if SINGLE_THREAD == 0:
+        sync_thread()
 
     start_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
     while True:

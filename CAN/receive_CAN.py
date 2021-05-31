@@ -1,4 +1,5 @@
-from ../main import TOTAL_THREADS_NUM, thread_count
+from main_CAN import SINGLE_THREAD
+from ..main import TOTAL_THREADS_NUM, thread_count
 import threading
 import time
 import pandas as pd
@@ -19,12 +20,15 @@ def sync_thread():
         pass
 
 def receive_CAN(d_name, db, can_bus, stop):
+    global SINGLE_THREAD
+
     print(f"'{d_name}' thread started.")
 
     df = pd.DataFrame(columns=['timestamp'])
     can_monitoring = dict()
 
-    sync_thread()
+    if SINGLE_THREAD == 0:
+        sync_thread()
 
     start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
     while(True):

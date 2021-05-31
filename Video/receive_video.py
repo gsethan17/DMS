@@ -1,4 +1,5 @@
-from main import TOTAL_THREADS_NUM, thread_count
+from main_video import SINGLE_THREAD
+from ..main import TOTAL_THREADS_NUM, thread_count
 import threading
 import time
 import datetime as dt
@@ -19,6 +20,8 @@ def sync_thread():
         pass
 
 def receive_video(d_name, stop):
+    global SINGLE_THREAD
+
     print(f"'{d_name}' thread started.")
 
     x = dt.datetime.now()
@@ -33,7 +36,8 @@ def receive_video(d_name, stop):
     cap = cv2.VideoCapture(0)
     i = 0
 
-    sync_thread()
+    if SINGLE_THREAD == 0:
+        sync_thread()
 
     while(cap.isOpened()):
         st_time = time.time()

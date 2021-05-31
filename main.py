@@ -4,14 +4,15 @@ import can
 import pyaudio
 import time
 import sys
-from Audio import receive_audio
-from CAN import receive_CAN
+from Audio.receive_audio import receive_audio
+# from Audio.receive_audio import *
+from CAN.receive_CAN import receive_CAN
 from HMI import *
-from Sensor import receive_sensor
-from Video import receive_video
+from Sensor.receive_sensor import receive_sensor
+from Video.receive_video import receive_video
 
 ## These variables are used in receive_data.py to sync threads
-TOTAL_THREADS_NUM = 3 ## Add 1 each time a sensor is added.
+TOTAL_THREADS_NUM = 4 ## Add 1 each time a sensor is added.
 thread_count = 0
 
 def main():
@@ -30,11 +31,12 @@ def main():
     ### Thread setting ###
     stop_threads = False
     workers = []
-    data_names = ['CAN', 'video', 'audio',]
-    thread_functions = [receive_CAN.receive_CAN, receive_video.receive_video, receive_audio.receive_audio,]
+    data_names = ['CAN', 'video', 'audio', 'sensor',]
+    thread_functions = [receive_CAN, receive_video, receive_audio, receive_sensor,]
     func_args = {'CAN': (db, can_bus),
                  'video': (),
                  'audio': (FORMAT, RATE, CHANNELS, CHUNK),
+                 'sensor': (),
                  }
     
     ### Thread generation ###
