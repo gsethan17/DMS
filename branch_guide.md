@@ -1,7 +1,7 @@
 # GIT Branch Guide
 ### Github repository에서 특정 branch만 clone하는 방법
 ```
-$ git clone –b <branchName> --single-branch https://github.com/gsethan17/DMS.git
+$ git clone -b <branchName> --single-branch https://github.com/gsethan17/DMS.git
     ## <branchName>: Audio, CAN, HMI, Sensor, Video 중 1개 선택
     ## DMS 폴더가 clone됨
 $ cd DMS
