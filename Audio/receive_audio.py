@@ -1,6 +1,5 @@
-# from main_audio import SINGLE_THREAD
-from main import TOTAL_THREADS_NUM, thread_count
-import threading
+import os
+import sys
 import time
 import numpy as np
 
@@ -8,23 +7,7 @@ import pyaudio
 import struct
 from scipy.io.wavfile import write
 
-lock = threading.Lock()
-def sync_thread():
-    global thread_count, TOTAL_THREADS_NUM
-
-    lock.acquire()
-    try:
-        thread_count += 1
-    finally:
-        lock.release()
-    while thread_count != TOTAL_THREADS_NUM:
-        pass
-
-def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
-    from .main_audio import SINGLE_THREAD
-
-    # global SINGLE_THREAD
-
+def receive_audio(d_name="audio", FORMAT=pyaudio.paInt16, RATE=44100, CHANNELS=1, CHUNK=1024, stop=False):
     print(f"'{d_name}' thread started.")
     
     p = pyaudio.PyAudio()
@@ -38,9 +21,6 @@ def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
     
     data = []
     flag = False
-
-    if SINGLE_THREAD == 0:
-        sync_thread()
 
     start_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
     while True:
@@ -66,3 +46,6 @@ def receive_audio(d_name, FORMAT, RATE, CHANNELS, CHUNK, stop):
 
     write(f"../DMS_dataset/audio/{start_time}.wav", RATE, data.astype(np.int16))
     print(f"'{d_name}' thread terminated.")
+
+if __name__=="__main__":
+    receive_audio()

@@ -1,27 +1,11 @@
-from main_video import SINGLE_THREAD
-from ..main import TOTAL_THREADS_NUM, thread_count
-import threading
 import time
 import datetime as dt
 import os
 
 import cv2
 
-lock = threading.Lock()
-def sync_thread():
-    global thread_count, TOTAL_THREADS_NUM
-
-    lock.acquire()
-    try:
-        thread_count += 1
-    finally:
-        lock.release()
-    while thread_count != TOTAL_THREADS_NUM:
-        pass
 
 def receive_video(d_name, stop):
-    global SINGLE_THREAD
-
     print(f"'{d_name}' thread started.")
 
     x = dt.datetime.now()
@@ -35,9 +19,6 @@ def receive_video(d_name, stop):
     past_cur_time = 0
     cap = cv2.VideoCapture(0)
     i = 0
-
-    if SINGLE_THREAD == 0:
-        sync_thread()
 
     while(cap.isOpened()):
         st_time = time.time()
@@ -65,3 +46,7 @@ def receive_video(d_name, stop):
     cv2.destroyAllWindows()
 
     print(f"'{d_name}' thread terminated.")
+
+
+if __name__=="__main__":
+    receive_video(d_name="video", stop=False)

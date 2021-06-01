@@ -1,34 +1,14 @@
-from main_CAN import SINGLE_THREAD
-from ..main import TOTAL_THREADS_NUM, thread_count
-import threading
 import time
 import pandas as pd
 
 import cantools
 import can
 
-lock = threading.Lock()
-def sync_thread():
-    global thread_count, TOTAL_THREADS_NUM
-
-    lock.acquire()
-    try:
-        thread_count += 1
-    finally:
-        lock.release()
-    while thread_count != TOTAL_THREADS_NUM:
-        pass
-
 def receive_CAN(d_name, db, can_bus, stop):
-    global SINGLE_THREAD
-
     print(f"'{d_name}' thread started.")
 
     df = pd.DataFrame(columns=['timestamp'])
     can_monitoring = dict()
-
-    if SINGLE_THREAD == 0:
-        sync_thread()
 
     start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
     while(True):
@@ -58,3 +38,6 @@ def receive_CAN(d_name, db, can_bus, stop):
 
     df.to_csv(f"../DMS_dataset/can/{start_time}.csv")
     print(f"'{d_name}' thread terminated.")
+
+if __name__=="__main__":
+    # receive_CAN()

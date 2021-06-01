@@ -1,15 +1,22 @@
-## Test file for 'receive_audio' thread
 import threading
+import cantools
+import can
 import pyaudio
-# from receive_audio import receive_audio
+import time
+import sys
 
-SINGLE_THREAD = 0
+from receive_data import *
 
-def audio_main():
-    from receive_audio import receive_audio
-    
+## These variables are used in receive_data.py to sync threads
+TOTAL_THREADS_NUM = 4 ## Add 1 each time a sensor is added.
+thread_count = 0
+
+def main():
     print("Main thread started.")
-    SINGLE_THREAD = 1
+    
+    ### CAN setting ###
+    db = cantools.database.load_file('/media/imlab/62C1-3A4A/AE_PE_C_C_KOOKMIN_2/AE_PE_C_C_KOOKMIN_2.dbc')
+    can_bus = can.interface.Bus('can0', bustype='socketcan')
 
     ### Audio setting ###
     FORMAT = pyaudio.paInt16
@@ -20,10 +27,12 @@ def audio_main():
     ### Thread setting ###
     stop_threads = False
     workers = []
-    data_names = ['audio']
-    thread_functions = [receive_audio]
-    func_args = {
+    data_names = ['CAN', 'video', 'audio', 'sensor',]
+    thread_functions = [receive_CAN, receive_video, receive_audio, receive_sensor,]
+    func_args = {'CAN': (db, can_bus),
+                 'video': (),
                  'audio': (FORMAT, RATE, CHANNELS, CHUNK),
+                 'sensor': (),
                  }
     
     ### Thread generation ###
@@ -45,4 +54,4 @@ def audio_main():
 
     
 if __name__ == "__main__":
-    audio_main()
+    main()
