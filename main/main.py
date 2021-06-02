@@ -15,8 +15,12 @@ def main():
     print("Main thread started.")
     
     ### CAN setting ###
-    db = cantools.database.load_file('/media/imlab/62C1-3A4A/AE_PE_C_C_KOOKMIN_2/AE_PE_C_C_KOOKMIN_2.dbc')
-    can_bus = can.interface.Bus('can0', bustype='socketcan')
+    # CAN_basePath = '/media/imlab/62C1-3A4A/CAN_dbc/20210527'
+    # C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
+    # P_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_P_CAN_KOOKMIN_20210527.dbc')
+    # can_db = [C_db, P_db]
+    # db = C_db
+    # can_bus = can.interface.Bus('can0', bustype='socketcan')
 
     ### Audio setting ###
     FORMAT = pyaudio.paInt16
@@ -29,7 +33,7 @@ def main():
     workers = []
     data_names = ['CAN', 'video', 'audio', 'sensor',]
     thread_functions = [receive_CAN, receive_video, receive_audio, receive_sensor,]
-    func_args = {'CAN': (db, can_bus),
+    func_args = {'CAN': (), #db, can_bus),
                  'video': (),
                  'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                  'sensor': (),
@@ -38,7 +42,7 @@ def main():
     ### Thread generation ###
     print("Press 'Enter' if you want to terminate every processes.")
     for d_name, th_func in zip(data_names, thread_functions):
-        worker = threading.Thread(target=th_func.th_func, args=(d_name, *func_args[d_name], lambda: stop_threads))
+        worker = threading.Thread(target=th_func, args=(d_name, *func_args[d_name], lambda: stop_threads))
         workers.append(worker)
         worker.start()
     
