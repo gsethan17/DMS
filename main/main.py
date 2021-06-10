@@ -13,14 +13,6 @@ thread_count = 0
 
 def main():
     print("Main thread started.")
-    
-    ### CAN setting ###
-    # CAN_basePath = '/media/imlab/62C1-3A4A/CAN_dbc/20210527'
-    # C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
-    # P_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_P_CAN_KOOKMIN_20210527.dbc')
-    # can_db = [C_db, P_db]
-    # db = C_db
-    # can_bus = can.interface.Bus('can0', bustype='socketcan')
 
     ### Audio setting ###
     FORMAT = pyaudio.paInt16
@@ -33,7 +25,7 @@ def main():
     workers = []
     data_names = ['CAN', 'video', 'audio', 'sensor',]
     thread_functions = [receive_CAN, receive_video, receive_audio, receive_sensor,]
-    func_args = {'CAN': (), #db, can_bus),
+    func_args = {'CAN': (),
                  'video': (),
                  'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                  'sensor': (),
