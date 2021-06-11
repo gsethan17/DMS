@@ -12,14 +12,26 @@ TOTAL_THREADS_NUM = 4 ## Add 1 each time a sensor is added.
 thread_count = 0
 
 def main():
+    check_name = 'n'
+    check_odd = 'n'
+    start_flag = 'n'
     
     ### General setting ###
-    check_name = 'n'
+    # Read registered driver
+    DRIVER_LIST = []    # [todo] read saved driver list
+    
     while check_name != 'y' :
         DRIVER_NAME = input("Enter your name : ")
-        check_name = input("Is your name {}? [y/n] ".format(str(DRIVER_NAME)))
+        
+        if str(DRIVER_NAME) in driver_list :
+            check_name = input("Are you registerd driver, {}? [y/n]".format(str(DRIVER_NAME)))
+        
+        else :
+            check_name = input("Are your new driver, {}? [y/n] ".format(str(DRIVER_NAME)))
+            if check_name == 'y' :
+                DRIVER_LIST.append(str(DRIVER_NAME))
+                # [todo] save updated drier list
     
-    check_odd = 'n'
     while check_odd != 'y' :
         START_ODD = input("Enter current odd meter " )
         check_odd = input("Is current odd meter {}? [y/n] ".format(int(START_ODD)))
@@ -67,6 +79,10 @@ def main():
                  }
     #####################
     
+    ### Driver's intention check ###
+    while start_flag != 'y' :
+        start_flag = input("Do you want to start collecting and storing data? [y/n] ")
+    #####################
     
     print("Main thread started.")
     ### Thread generation ###
