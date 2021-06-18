@@ -13,10 +13,6 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 
 # from receive_data import receive_CAN, receive_video, receive_audio, receive_sensor
-# from hmi import WindowClass
-# # These variables are used in receive_data.py to sync threads
-# TOTAL_THREADS_NUM = 4 ## Add 1 each time a sensor is added.
-# thread_count = 0
 
 def main():
     from receive_data import receive_CAN, receive_video, receive_audio, receive_sensor, WindowClass
@@ -73,9 +69,6 @@ def main():
     ###  HMI setting  ###
     
     #####################
-
-    myWindow = WindowClass(DRIVER_NAME)
-    myWindow.show()
     
     ### Thread setting ###
     stop_threads = False
@@ -95,6 +88,10 @@ def main():
     #####################
     
     print("Main thread started.")
+
+    myWindow = WindowClass(DRIVER_NAME)
+    myWindow.show()
+    
     ### Thread generation ###
     print("Press 'Enter' if you want to terminate every processes.")
     for d_name, th_func in zip(data_names, thread_functions):

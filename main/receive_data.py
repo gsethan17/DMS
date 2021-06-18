@@ -78,6 +78,7 @@ def receive_CAN(d_name, stop): # db, can_bus, stop):
             can_msg = can_bus.recv()
             for msg in db_msg:
                 if can_msg.arbitration_id == msg.frame_id:
+                    print(msg.name)
                     can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
                     can_dict['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
                     if len(df.columns) >= 48:
@@ -95,13 +96,13 @@ def receive_CAN(d_name, stop): # db, can_bus, stop):
                         df = df.append(can_dict, ignore_index=True)
 
                     # For monitoring
-                    if msg.name == 'ESP12':
-                        can_monitoring['ESP12'] = can_dict['CYL_PRES']
-                    elif msg.name == 'SAS11':
-                        can_monitoring['SAS11'] = can_dict['SAS_Angle']
-                    elif msg.name == 'WHL_SPD11':
-                        can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
-            print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
+            #         if msg.name == 'ESP12':
+            #             can_monitoring['ESP12'] = can_dict['CYL_PRES']
+            #         elif msg.name == 'SAS11':
+            #             can_monitoring['SAS11'] = can_dict['SAS_Angle']
+            #         elif msg.name == 'WHL_SPD11':
+            #             can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
+            # print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
 
             if stop():
                 break
@@ -278,8 +279,8 @@ class WindowClass(QMainWindow, form_class) :
         self.alram()
 
     def alram(self):
-        audio_in = 'in.mp3'
-        audio_out = 'out.mp3'
+        audio_in = '../HMI/in.mp3'
+        audio_out = '../HMI/out.mp3'
         self.hide()
         self.setWindowTitle('알림')
         # playsound(audio_out)

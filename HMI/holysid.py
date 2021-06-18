@@ -3,18 +3,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
-from gtts import gTTS
 from playsound import playsound
-import xml.etree.ElementTree as ET
 import pandas as pd
 import time
 import os
 
 form_class = uic.loadUiType("status.ui")[0]
-
-ui = open('status.ui', 'rt', encoding='UTF8')
-tree = ET.parse(ui)
-root = tree.getroot()
 
 class WindowClass(QMainWindow, form_class) :
     def __init__(self):
@@ -90,12 +84,13 @@ class WindowClass(QMainWindow, form_class) :
         audio_out = 'out.mp3'
         self.hide()
         self.setWindowTitle('알림')
-        playsound(audio_out)
+        # playsound(audio_out)
         time.sleep(1)
-        playsound(audio_in)
+        #playsound(audio_in)
         self.show()
 
 if __name__ == "__main__" :
+    print(sys.argv)
     app = QApplication(sys.argv)
     myWindow = WindowClass()
     myWindow.show()
