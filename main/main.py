@@ -15,7 +15,7 @@ from PyQt5 import uic
 
 def main():
     from receive_data import receive_CAN, receive_video, receive_audio, receive_sensor, WindowClass
-    from check_status import check_driving_cycle, check_velocity, check_driver, check_odd
+    from check_status import check_driving_cycle, check_velocity, check_driver, check_odd, check_intention
     
     ###  CAN setting  ###
     CAN_basePath = '/media/imlab/62C1-3A4A/CAN_dbc/20210527'
@@ -101,9 +101,8 @@ def main():
     #####################
     
     ### Driver's intention check ###
-    start_flag = 'n'
-    while start_flag != 'y' :
-        start_flag = input("[REQUEST] Do you want to start collecting and storing data? [y/n] ")
+    check_intention()
+    
     #####################
     
     print("[INFO] Main thread started.")
@@ -131,9 +130,13 @@ def main():
         worker.join()
 
 
+    ### Velocity status check ###
+    check_velocity(P_db, can_bus)
+    time.sleep(0.5)
+
+
     ### END ODDMETRY CHECK ###
     END_ODD = check_odd()
-
     odd_df = pd.DataFrame([(START_ODD, END_ODD)], columns=["START", "END"])
     odd_df.to_csv(f"{DATASET_PATH}/START_END_ODD.csv")
     

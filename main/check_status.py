@@ -89,3 +89,8 @@ def check_odd():
         check_odd = input("[REQUEST] Is current odd meter {} km? [y/n] ".format(int(ODD)))
     
     return ODD
+
+def check_intention():
+    start_flag = 'n'
+    while start_flag != 'y' :
+        start_flag = input("[REQUEST] Do you want to start collecting and storing data? [y/n] ")

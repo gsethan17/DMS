@@ -74,14 +74,18 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
     sync_thread()
     cnt = 0
     first = True
+    time_total = 0.
+    cycle = 0
     start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
     while(True):
         try:
             can_msg = can_bus.recv()
+            st = time.time()
             for msg in db_msg:
                 if can_msg.arbitration_id == msg.frame_id:
                     can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
-                    can_dict['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
+                    # can_dict['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
+                    can_dict['timestamp'] = can_msg.timestamp
                     if len(df.columns) >= 48:
                         if first:
                             df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
@@ -104,7 +108,9 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
             print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
-
+            time_total += (time.time() - st)
+            cycle += 1
+            # print(f"{time.time() - st:.6f} sec")
             if stop():
                 break
         
@@ -112,11 +118,11 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
             # raise(e)
             if stop():
                 break
-    print(f"[INFO] CAN COUNT[{cnt}]")
+    print(f"[INFO] # of CAN[{cnt}] MEAN_TIME[{time_total / cycle:.6f}] CYCLE[{cycle}]")
     print(f"[INFO] '{d_name}' thread terminated.")
 
+
 def receive_video(d_name, DATASET_PATH, stop):
-    global dp_color_1, dp_color_2
     print(f"[INFO] '{d_name}' thread started.")
 
     VIDEO_PATH = DATASET_PATH + '/video/'
@@ -133,8 +139,6 @@ def receive_video(d_name, DATASET_PATH, stop):
     ### ...from Camera 1 ###
     pipeline_1 = rs.pipeline()
     config_1 = rs.config()
-
-
     config_1.enable_device("102422072555")
     config_1.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -147,7 +151,7 @@ def receive_video(d_name, DATASET_PATH, stop):
     config_2.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config_2.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
     config_2.enable_stream(rs.stream.infrared, 2, 640, 480, rs.format.y8, 30)
-
+    
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     colorVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'color_front2.avi', fourcc, 30.0, (640,480))
@@ -162,37 +166,51 @@ def receive_video(d_name, DATASET_PATH, stop):
     ### Start streaming from both cameras ###
     pipeline_profile_1 = pipeline_1.start(config_1)
     # intr = pipeline_profile_1.as_video_stream_profile().get_intrinsics()
-    depth_sensor = pipeline_profile_1.get_device().first_depth_sensor()
-    depth_scale = depth_sensor.get_depth_scale()
+    # depth_sensor1 = pipeline_profile_1.get_device().first_depth_sensor()
+    depth_sensor1 = pipeline_profile_1.get_device().query_sensors()[0]
+    depth_sensor1.set_option(rs.option.enable_auto_exposure, True)
+    
 
-    print("Depth Scale is: ", depth_scale)
+    # print("Depth Scale is: ", depth_scale)
 
-    clipping_distance_in_meters = 1
-    clipping_distance  = clipping_distance_in_meters/depth_scale
+    # clipping_distance_in_meters = 1
+    # clipping_distance  = clipping_distance_in_meters/depth_scale
 
 
     align_to_color = rs.stream.color
-    align_to_depth = rs.stream.infrared
+    # align_to_depth = rs.stream.infrared
     align_color = rs.align(align_to_color)
-    align_depth = rs.align(align_to_depth)
+    # align_depth = rs.align(align_to_depth)
     # infrared_scale = infrared_sensor.get_infrared_scale()
     # print("Infrared Scale is: ", infrared_scale)
 
 
     pipeline_profile_2 = pipeline_2.start(config_2)
-
-    device1 = pipeline_profile_1.get_device()
-    depth_sensor1 = device1.query_sensors()[0]
-    emitter1 = depth_sensor1.get_option(rs.option.emitter_enabled)
-
-
     device2 = pipeline_profile_2.get_device()
     depth_sensor2 = device2.query_sensors()[0]
-    emitter2 = depth_sensor2.get_option(rs.option.emitter_enabled)
-    print(emitter2)
-    set_emitter = 1
+    depth_sensor2.set_option(rs.option.enable_auto_exposure, True)
+    
+    set_emitter = 0
+
+
     depth_sensor1.set_option(rs.option.emitter_enabled, set_emitter)
+    depth_sensor1.set_option(rs.option.visual_preset, 1)
     depth_sensor2.set_option(rs.option.emitter_enabled, set_emitter)
+    depth_sensor2.set_option(rs.option.visual_preset, 1)
+
+    colorizer = rs.colorizer()
+    colorizer.set_option(rs.option.visual_preset, 0)
+    # colorizer.set_option(rs.option.histogram_equalizer_enabled, True)
+    colorizer.set_option(rs.option.min_distance,0.7)
+    colorizer.set_option(rs.option.max_distance, 4)
+
+    colorizer1 = rs.colorizer()
+    colorizer1.set_option(rs.option.histogram_equalization_enabled, True)
+    colorizer1.set_option(rs.option.visual_preset, 0)
+    # colorizer.set_option(rs.option.histogram_equalizer_enabled, True)
+    colorizer1.set_option(rs.option.min_distance,0.01)
+    colorizer1.set_option(rs.option.max_distance, 0.15)
+            
 
     sync_thread()
     try:
@@ -201,20 +219,21 @@ def receive_video(d_name, DATASET_PATH, stop):
             ### Camera 1 ###
             ### Wait for a coherent pair of frames: depth and color ###
             frames_1 = pipeline_1.wait_for_frames()
-            frameset3 = align_depth.process(frames_1)
+            # frameset3 = align_depth.process(frames_1)
             frameset2 = align_color.process(frames_1)
-            frameset = align_depth.process(frameset2)
+            # frameset = align_depth.process(frameset2)
 
-            color_frame_1 = frameset3.get_color_frame()
-            color_intr = color_frame_1.profile.as_video_stream_profile().intrinsics
+            color_frame_1 = frameset2.get_color_frame()
+            # color_intr = color_frame_1.profile.as_video_stream_profile().intrinsics
             # print("=================")
             # print(color_intr)
-            ir_frame_1 = frameset.get_infrared_frame()
-            ir_intr = ir_frame_1.profile.as_video_stream_profile().intrinsics
+            ir_frame_1 = frameset2.get_infrared_frame()
+            # ir_intr = ir_frame_1.profile.as_video_stream_profile().intrinsics
             # print(ir_intr)
-            depth_frame_1 = frameset2.get_depth_frame()
-            depth_intr = depth_frame_1.profile.as_video_stream_profile().intrinsics
+            depth_frame_1 = frames_1.get_depth_frame()
+            # depth_intr = depth_frame_1.profile.as_video_stream_profile().intrinsics
             # print(depth_intr)
+
             
 
             if not depth_frame_1 or not color_frame_1 or not ir_frame_1:
@@ -222,12 +241,12 @@ def receive_video(d_name, DATASET_PATH, stop):
                 continue
 
             ### Convert images to numpy arrays ###
-            depth_image_1 = np.asanyarray(depth_frame_1.get_data())
+            depth_image_1 = np.asanyarray(colorizer.colorize(depth_frame_1).get_data())
             color_image_1 = np.asanyarray(color_frame_1.get_data())
             ir_image_1 = np.asanyarray(ir_frame_1.get_data())
             
             ### Apply colormap on depth image (image must be converted to 8-bit per pixel first) ###
-            depth_colormap_1 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_1, alpha=0.5), cv2.COLORMAP_JET)
+            depth_colormap_1 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_1, alpha=1.0) , cv2.COLORMAP_JET)
             ir_img_1 = cv2.cvtColor(ir_image_1, cv2.COLOR_GRAY2BGR)
             
             ### Camera 2 ###
@@ -240,13 +259,13 @@ def receive_video(d_name, DATASET_PATH, stop):
                 continue
             
             ### Convert images to numpy arrays ###
-            depth_image_2 = np.asanyarray(depth_frame_2.get_data())
+            depth_image_2 = np.asanyarray(colorizer1.colorize(depth_frame_2).get_data())
             color_image_2 = np.asanyarray(color_frame_2.get_data())
             ir_image_2 = np.asanyarray(ir_frame_2.get_data())
             ir_img_2 = cv2.cvtColor(ir_image_2, cv2.COLOR_GRAY2BGR)
 
             ### Apply colormap on depth image (image must be converted to 8-bit per pixel first) ###
-            depth_colormap_2 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_2, alpha=0.5), cv2.COLORMAP_JET)
+            depth_colormap_2 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_2, alpha=1.0), cv2.COLORMAP_JET)
     
             colorVideo1.write(color_image_1)
             depthVideo1.write(depth_colormap_1)
@@ -349,9 +368,7 @@ class check_response(QDialog):
         super(check_response, self).__init__(parent)
         self.parent = parent
 
-        self.PATH = DATASET_PATH + "/HMI/"
-        if not os.path.isdir(self.PATH):
-            os.mkdir(self.PATH)
+        self.PATH = DATASET_PATH
 
         self.clicked_time = QTimer()
         self.clicked_time.setInterval(10000)
@@ -415,7 +432,7 @@ class check_response(QDialog):
         raw_data = [(time.time(), self.parent.name, self.parent.re)]
         data = pd.DataFrame(raw_data, columns=self.parent.df.columns)
         self.parent.df = self.parent.df.append(data)
-        self.parent.df.to_csv(f'{self.PATH + self.parent.name}.csv', index=False, encoding='utf-8-sig')
+        self.parent.df.to_csv(f'{self.PATH}', index=False, encoding='utf-8-sig')
         self.hide()
 
     def show_parent(self):
@@ -430,19 +447,24 @@ class WindowClass(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
         self.name = DRIVER_NAME
-        self.path = DATASET_PATH
-
+        self.path = DATASET_PATH + "/HMI/"
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+        
         self.re = 0
         self.audio_out = '../HMI/out.mp3'
-        self.filename = self.name + '.csv'
+
+        self.start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
+        self.filename = self.start_time + '.csv'
         self.setGeometry(0, 1000, 550, 900)
-        if os.path.exists(self.filename):
+        if os.path.exists(self.path + self.filename):
             print(f'{self.name} 기록 시작합니다')
         else:
             df = pd.DataFrame(columns=['time', 'driver', 'status'])
-            df.to_csv(self.filename, index=False)
+            df.to_csv(self.path + self.filename, index=False)
             print(f'{self.filename} 파일을 생성하였습니다')
-        self.df = pd.read_csv(f'{self.name}.csv', encoding='utf-8-sig')
+        self.path = self.path + self.filename
+        self.df = pd.read_csv(f'{self.path}', encoding='utf-8-sig')
         self.setWindowTitle('기록중')
         self.setWindowModality(2)
         self.show()
