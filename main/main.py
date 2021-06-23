@@ -1,4 +1,5 @@
-import threading
+# import threading
+import multiprocessing
 import cantools
 import can
 import pyaudio
@@ -14,7 +15,7 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 
 def main():
-    from receive_data import receive_CAN, receive_video, receive_audio, receive_sensor, WindowClass
+    from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odd, check_intention
     
     ###  CAN setting  ###
@@ -79,24 +80,20 @@ def main():
     #####################    
     
     
-    ### Thread setting ###
-    stop_threads = False
-    workers = []
+    ### Process setting ###
+    # stop_procs = False
+    procs = []
+    stop_event = multiprocessing.Event()
+    send_conn, recv_conn = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'video', 'audio', 'sensor']
-    thread_functions = [receive_CAN, receive_video, receive_audio, receive_sensor]
+    data_names = ['CAN', 'audio']#'video', 'video_visual', 'audio']#, 'sensor']
+    proc_functions = [receive_CAN, receive_audio]# receive_video, visualize_video, receive_audio]#, receive_sensor]
     func_args = {'CAN': (P_db, C_db, can_bus),
-                'video': (),
+                # 'video': (send_conn),
+                # 'video_visual': (recv_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
-                'sensor': (),
+                # 'sensor': (),
                 }
-    # data_names = ['CAN', 'audio', 'sensor']
-    # thread_functions = [receive_CAN, receive_audio, receive_sensor]
-    # func_args = {'CAN': (P_db, C_db, can_bus),
-    #             # 'video': (),
-    #             'audio': (FORMAT, RATE, CHANNELS, CHUNK),
-    #             'sensor': (),
-    #             }
 
     #####################
     
@@ -106,28 +103,33 @@ def main():
     #####################
     
     print("[INFO] Main thread started.")
+    
+    ### Process generation ###
+    for d_name, proc_func in zip(data_names, proc_functions):
+        proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
+        procs.append(proc)
+    proc = multiprocessing.Process(target=receive_video, args=('video', DATASET_PATH, send_conn, stop_event))
+    procs.append(proc)
+    proc = multiprocessing.Process(target=visualize_video, args=('video_visual', DATASET_PATH, recv_conn, stop_event))
+    procs.append(proc)
+    for proc in procs:
+        proc.start()
+    ### Process terminate ###
+    time.sleep(5)
 
     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
     myWindow.show()
-    
-    ### Thread generation ###
-    # print("[REQUEST] Press 'Enter' if you want to terminate every processes.")
-    for d_name, th_func in zip(data_names, thread_functions):
-        worker = threading.Thread(target=th_func, args=(d_name, DATASET_PATH, *func_args[d_name], lambda: stop_threads))
-        workers.append(worker)
-        worker.start()
-    
-    ### thread terminate ###
-    time.sleep(5)
+
     terminate_signal = input("[REQUEST] Press 'Enter' if you want to terminate every processes.")
     while terminate_signal != '':
-        print("[REQUEST] Wrong input! Press 'Enter'")
+        print("[REQUEST] Invalid input! Press 'Enter'")
         terminate_signal = input()
-    stop_threads = True
-
+    
+    stop_event.set()
+        
     ### thread terminate double check ###
-    for worker in workers:
-        worker.join()
+    for proc in procs:
+        proc.join()
 
 
     ### Velocity status check ###
@@ -141,14 +143,12 @@ def main():
     odd_df.to_csv(f"{DATASET_PATH}/START_END_ODD.csv")
     
     
-    
-    print("[INFO] Main thread finished.")
+    print("[INFO] Main process finished.")
 
-    return terminate_signal
     #####################
 
     
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    stop = main()
+    main()
     QCoreApplication.instance().quit

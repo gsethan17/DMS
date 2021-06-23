@@ -1,8 +1,11 @@
-import threading
+# import threading
+import multiprocessing
 import time
 import datetime as dt
 import os
 import sys
+import socket
+import pickle
 
 import pandas as pd
 import numpy as np
@@ -25,23 +28,24 @@ from PyQt5 import uic
 from playsound import playsound
 
 ### These variables are used in receive_data.py to sync threads ###
-TOTAL_THREADS_NUM = 4 ### Add 1 each time a sensor is added. ###
-thread_count = 0
+TOTAL_THREADS_NUM = multiprocessing.Value('d', 4) ### Add 1 each time a sensor is added. ###
+thread_count = multiprocessing.Value('d', 0)
 
-lock = threading.Lock()
+lock = multiprocessing.Lock()
 def sync_thread():
     global thread_count, TOTAL_THREADS_NUM
 
     lock.acquire()
     try:
-        thread_count += 1
+        thread_count.value += 1
     finally:
         lock.release()
-    while thread_count != TOTAL_THREADS_NUM:
+        
+    while thread_count.value != TOTAL_THREADS_NUM.value:
         pass
 
-def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
-    print(f"[INFO] '{d_name}' thread started.")
+def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
+    print(f"[INFO] '{d_name}' process is started.")
 
     CAN_PATH = DATASET_PATH + '/CAN/'
     if not os.path.isdir(CAN_PATH):
@@ -66,12 +70,12 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
     for msg in C_db.messages:
         if msg.name == 'NAVI_STD_SEG_E':
             db_msg.append(msg)
-
+    
     df = pd.DataFrame(columns=['timestamp'])
     can_monitoring = {'ESP12': -1, 'SAS11': -1, 'WHL_SPD11': -1}
 
-    
     sync_thread()
+    print(f"[INFO] '{d_name}' process starts recording.")
     cnt = 0
     first = True
     time_total = 0.
@@ -107,23 +111,25 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop):
                         can_monitoring['SAS11'] = can_dict['SAS_Angle']
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
-            print("ESP: {:08.5f},  SAS: {:08.5f},  WHL: {:08.5f}".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
+            print("CYL_PRES[{:08.5f}],  SAS_Angle[{:08.5f}],  WHL_SPD[{:08.5f}]".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
             time_total += (time.time() - st)
             cycle += 1
-            # print(f"{time.time() - st:.6f} sec")
-            if stop():
+        
+            if stop_event.is_set():
                 break
         
         except Exception as e:
+            # pass
             # raise(e)
-            if stop():
+            if stop_event.is_set():
                 break
+
     print(f"[INFO] # of CAN[{cnt}] MEAN_TIME[{time_total / cycle:.6f}] CYCLE[{cycle}]")
-    print(f"[INFO] '{d_name}' thread terminated.")
+    print(f"[INFO] '{d_name}' process is terminated.")
 
 
-def receive_video(d_name, DATASET_PATH, stop):
-    print(f"[INFO] '{d_name}' thread started.")
+def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
+    print(f"[INFO] '{d_name}' process is started.")
 
     VIDEO_PATH = DATASET_PATH + '/video/'
     if not os.path.isdir(VIDEO_PATH):
@@ -192,11 +198,10 @@ def receive_video(d_name, DATASET_PATH, stop):
     
     set_emitter = 0
 
-
     depth_sensor1.set_option(rs.option.emitter_enabled, set_emitter)
-    depth_sensor1.set_option(rs.option.visual_preset, 1)
+    # depth_sensor1.set_option(rs.option.visual_preset, 1)
     depth_sensor2.set_option(rs.option.emitter_enabled, set_emitter)
-    depth_sensor2.set_option(rs.option.visual_preset, 1)
+    # depth_sensor2.set_option(rs.option.visual_preset, 1)
 
     colorizer = rs.colorizer()
     colorizer.set_option(rs.option.visual_preset, 0)
@@ -212,22 +217,24 @@ def receive_video(d_name, DATASET_PATH, stop):
     colorizer1.set_option(rs.option.max_distance, 0.15)
             
 
+    # global lock
     sync_thread()
+    print(f"[INFO] '{d_name}' process starts recording.")
     try:
         while True:
-
             ### Camera 1 ###
             ### Wait for a coherent pair of frames: depth and color ###
             frames_1 = pipeline_1.wait_for_frames()
             # frameset3 = align_depth.process(frames_1)
-            frameset2 = align_color.process(frames_1)
+            # frameset2 = align_color.process(frames_1)
             # frameset = align_depth.process(frameset2)
 
-            color_frame_1 = frameset2.get_color_frame()
+            # color_frame_1 = frameset2.get_color_frame()
+            color_frame_1 = frames_1.get_color_frame()
             # color_intr = color_frame_1.profile.as_video_stream_profile().intrinsics
             # print("=================")
             # print(color_intr)
-            ir_frame_1 = frameset2.get_infrared_frame()
+            ir_frame_1 = frames_1.get_infrared_frame()
             # ir_intr = ir_frame_1.profile.as_video_stream_profile().intrinsics
             # print(ir_intr)
             depth_frame_1 = frames_1.get_depth_frame()
@@ -278,40 +285,55 @@ def receive_video(d_name, DATASET_PATH, stop):
 
             dp_color_1 = cv2.resize(color_image_1, (500,400))
             dp_color_2 = cv2.resize(color_image_2, (500,400))
-    
+            
+            
+            images1 = np.hstack((color_image_1, color_image_2))
+            send_conn.send(images1)
+
             ### Stack all images horizontally ###
             # images1 = np.hstack((color_image_1, depth_colormap_1, ir_img_1))
             # images2 = np.hstack((color_image_2, depth_colormap_2, ir_img_2))
-            # Show images from both cameras
+            
+            ### Show images from both cameras ###
+
             # cv2.namedWindow("FRONT VIEW", cv2.WINDOW_AUTOSIZE)
+            # time.sleep(1)
             # cv2.moveWindow("FRONT VIEW", 50, 0)
             # cv2.imshow("FRONT VIEW", dp_color_1)
 
             # cv2.namedWindow("SIDE VIEW", cv2.WINDOW_AUTOSIZE)
             # cv2.moveWindow("SIDE VIEW", 560, 0)
             # cv2.imshow("SIDE VIEW",  dp_color_2)
-            # print("here7")
-            # key = cv2.waitKey(0)
+            # key = cv2.waitKey(10)
             
-            if stop():
-                # cv2.destroyAllWindows()
+            if stop_event.is_set():
                 break
-            # if key & 0xFF == ord("q") or key == 27:
-            #     cv2.destroyAllWindows()
-            #     break
-
-
     finally:
 
         ### Stop streaming ###
         pipeline_1.stop()
         pipeline_2.stop()
 
-    print(f"[INFO] '{d_name}' thread terminated.")
+    print(f"[INFO] '{d_name}' process is terminated.")
 
 
-def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop):
-    print(f"[INFO] '{d_name}' thread started.")
+def visualize_video(d_name, DATASET_PATH, recv_conn, stop_event):
+    print(f"[INFO] '{d_name}' process is started.")
+    sync_thread()
+    while True:
+        image = recv_conn.recv()
+        cv2.imshow('ImageWindow', image)
+        cv2.waitKey(1)
+
+        if stop_event.is_set():
+            cv2.destroyAllWindows()
+            break
+        
+    print(f"[INFO] '{d_name}' process is terminated.")
+
+
+def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_event):
+    print(f"[INFO] '{d_name}' process is started.")
 
     AUDIO_PATH = DATASET_PATH + '/audio/'
     if not os.path.isdir(AUDIO_PATH):
@@ -328,35 +350,37 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop):
     
     data = []
     flag = False
-
+    
     sync_thread()
-
+    print(f"[INFO] '{d_name}' process starts recording.")
     start_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
     while True:
         try:
-            frame = np.fromstring(stream.read(CHUNK), dtype = np.int16)
+            audio = stream.read(CHUNK)
+            frame = np.fromstring(audio, dtype = np.int16)
 
             if not flag : 
                 data = frame
             else :
                 data = np.concatenate((data, frame), axis = None)
             flag = True
+
             
-            if stop():
+            if stop_event.is_set():
                 break
-
+                        
         except:
-            if stop():
+            if stop_event.is_set():
                 break
-
+    
     stream.stop_stream()
     stream.close()
     p.terminate()
     write(f"{AUDIO_PATH + start_time}.wav", RATE, data.astype(np.int16))
 
-    print(f"[INFO] '{d_name}' thread terminated.")
+    print(f"[INFO] '{d_name}' process is terminated.")
 
-def receive_sensor(d_name, DATASET_PATH, stop):
+def receive_sensor(d_name, DATASET_PATH, stop_event):
     sync_thread()
     pass
 
@@ -458,11 +482,11 @@ class WindowClass(QMainWindow, form_class):
         self.filename = self.start_time + '.csv'
         self.setGeometry(0, 1000, 550, 900)
         if os.path.exists(self.path + self.filename):
-            print(f'{self.name} 기록 시작합니다')
+            print(f'[INFO] {self.name} HMI starts recording.')
         else:
             df = pd.DataFrame(columns=['time', 'driver', 'status'])
             df.to_csv(self.path + self.filename, index=False)
-            print(f'{self.filename} 파일을 생성하였습니다')
+            print(f'[INFO] {self.name} HMI file is created.')
         self.path = self.path + self.filename
         self.df = pd.read_csv(f'{self.path}', encoding='utf-8-sig')
         self.setWindowTitle('기록중')
