@@ -1,4 +1,4 @@
-*.wav
+## DMS main branch .gitignore
 *.avi
 *.csv
 /.idea
