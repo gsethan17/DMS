@@ -1,4 +1,3 @@
-# import threading
 import multiprocessing
 import cantools
 import can
@@ -81,10 +80,10 @@ def main():
     
     
     ### Process setting ###
-    # stop_procs = False
     procs = []
     stop_event = multiprocessing.Event()
     send_conn, recv_conn = multiprocessing.Pipe()
+    # audio_send, audio_recv = multiprocessing.Pipe()
 
     data_names = ['CAN', 'audio']#'video', 'video_visual', 'audio']#, 'sensor']
     proc_functions = [receive_CAN, receive_audio]# receive_video, visualize_video, receive_audio]#, receive_sensor]
@@ -104,6 +103,7 @@ def main():
     
     print("[INFO] Main thread started.")
     
+
     ### Process generation ###
     for d_name, proc_func in zip(data_names, proc_functions):
         proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
@@ -112,6 +112,7 @@ def main():
     procs.append(proc)
     proc = multiprocessing.Process(target=visualize_video, args=('video_visual', DATASET_PATH, recv_conn, stop_event))
     procs.append(proc)
+    
     for proc in procs:
         proc.start()
     ### Process terminate ###

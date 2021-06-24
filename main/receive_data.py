@@ -27,6 +27,9 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 from playsound import playsound
 
+from pydub import AudioSegment
+from pydub.playback import play
+
 ### These variables are used in receive_data.py to sync threads ###
 TOTAL_THREADS_NUM = multiprocessing.Value('d', 4) ### Add 1 each time a sensor is added. ###
 thread_count = multiprocessing.Value('d', 0)
@@ -111,7 +114,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
                         can_monitoring['SAS11'] = can_dict['SAS_Angle']
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
-            print("CYL_PRES[{:08.5f}],  SAS_Angle[{:08.5f}],  WHL_SPD[{:08.5f}]".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
+            # print("CYL_PRES[{:08.5f}],  SAS_Angle[{:08.5f}],  WHL_SPD[{:08.5f}]".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
             time_total += (time.time() - st)
             cycle += 1
         
@@ -393,12 +396,13 @@ class check_response(QDialog):
         self.parent = parent
 
         self.PATH = DATASET_PATH
-
+        
         self.clicked_time = QTimer()
-        self.clicked_time.setInterval(10000)
+        self.clicked_time.setInterval(5000)
         self.replied_time = QTimer()
-        self.replied_time.setInterval(20000)
-        self.audio_in = '../HMI/in.mp3'
+        self.replied_time.setInterval(10000)
+        self.wav_in = '../HMI/in.wav'
+        self.in_sound = AudioSegment.from_file(self.wav_in)
 
         check_response_ui = '../HMI/check.ui'
         uic.loadUi(check_response_ui, self)
@@ -406,29 +410,38 @@ class check_response(QDialog):
 
         if self.parent.re == 1:
             self.btn_re.setText(f'{parent.btn_1.text()}')
-            self.btn_re.setStyleSheet("color: white;"
+            self.btn_re.setStyleSheet("color: black;"
                                      "border-style: solid;"
-                                     "border-width: 2px;"
-                                     "background-color: #f7453b;"
+                                     "border-width: 3px;"
+                                     "background-color: #fa8d87;"
                                      "border-color: #f7453b;"
                                      "border-radius: 3px")
         elif self.parent.re == 2:
             self.btn_re.setText(f'{parent.btn_2.text()}')
-            self.btn_re.setStyleSheet("color: white;"
+            self.btn_re.setStyleSheet("color: black;"
                                      "border-style: solid;"
-                                     "border-width: 2px;"
-                                     "background-color: #fcc82b;"
-                                     "border-color: #fcc82b;"
+                                     "border-width: 3px;"
+                                     "background-color: #fcdcae;"
+                                     "border-color: #f79914;"
                                      "border-radius: 3px")
-        else:
+        elif self.parent.re == 3:
             self.btn_re.setText(f'{parent.btn_3.text()}')
-            self.btn_re.setStyleSheet("color: white;"
+            self.btn_re.setStyleSheet("color: black;"
                                      "border-style: solid;"
-                                     "border-width: 2px;"
-                                     "background-color: #4a7ac2;"
+                                     "border-width: 3px;"
+                                     "background-color: #87CEFA;"
                                      "border-color: #4a7ac2;"
                                      "border-radius: 3px")
-        self.btn_re.setFont(QFont("궁서",40))
+        else:
+            self.btn_re.setText(f'{parent.btn_4.text()}')
+            self.btn_re.setStyleSheet("color: black;"
+                                     "border-style: solid;"
+                                     "border-width: 3px;"
+                                     "background-color: #ebf0c0;"
+                                     "border-color: #c4d900;"
+                                     "border-radius: 3px")
+
+        self.btn_re.setFont(QFont("Gulim",40))
         self.lbl_re.setStyleSheet("color: red;"
                                  "border-style: solid;"
                                  "border-width: 2px;"
@@ -447,7 +460,7 @@ class check_response(QDialog):
 
     def btn(self):
         self.clicked_time.stop()
-        #playsound(self.audio_in)
+        self.replied_time.stop()
         self.close()
         self.parent.show()
 
@@ -464,6 +477,7 @@ class check_response(QDialog):
 
     def replied(self):
         self.replied_time.stop()
+        playsound(self.wav_in)
         self.show_parent()
 
 class WindowClass(QMainWindow, form_class):
@@ -474,13 +488,17 @@ class WindowClass(QMainWindow, form_class):
         self.path = DATASET_PATH + "/HMI/"
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
-        
-        self.re = 0
-        self.audio_out = '../HMI/out.mp3'
 
         self.start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
         self.filename = self.start_time + '.csv'
-        self.setGeometry(0, 1000, 550, 900)
+
+        self.setGeometry(0, 0, 1024, 1300)
+        
+        pal = QPalette()
+        pal.setColor(QPalette.Background,QColor(255,255,255))
+        self.lbl_driver.setFont(QFont("Gulim",44))
+        self.setPalette(pal)
+
         if os.path.exists(self.path + self.filename):
             print(f'[INFO] {self.name} HMI starts recording.')
         else:
@@ -489,55 +507,96 @@ class WindowClass(QMainWindow, form_class):
             print(f'[INFO] {self.name} HMI file is created.')
         self.path = self.path + self.filename
         self.df = pd.read_csv(f'{self.path}', encoding='utf-8-sig')
+
+        self.re = 0
+        self.wav_out = '../HMI/out.wav'
+
         self.setWindowTitle('기록중')
         self.setWindowModality(2)
         self.show()
         self.lbl_driver.setText(self.name)
-        pixmap = QPixmap('../HMI/tempsnip.png')
+        pixmap = QPixmap('../HMI/캡처.PNG')
         self.lbl_image.setPixmap(QPixmap(pixmap))
         self.btn_1.clicked.connect(self.btn1)
         self.btn_2.clicked.connect(self.btn2)
         self.btn_3.clicked.connect(self.btn3)
+        self.btn_4.clicked.connect(self.btn4)
 
         self.lbl_driver.setStyleSheet("color: black;"
                                       "border-style: solid;"
-                                      "border-width: 2px;"
+                                      "border-width: 3px;"
                                       "background-color: #87CEFA;"
                                       "border-color: #1E90FF;"
                                       "border-radius: 3px")
-        self.btn_1.setStyleSheet("color: white;"
+        self.btn_1.setStyleSheet("color: black;"
                                  "border-style: solid;"
-                                 "border-width: 2px;"
-                                 "background-color: #f7453b;"
+                                 "border-width: 3px;"
+                                 "background-color: #fa8d87;"
                                  "border-color: #f7453b;"
                                  "border-radius: 3px")
-        self.btn_2.setStyleSheet("color: white;"
+        self.btn_2.setStyleSheet("color: black;"
                                  "border-style: solid;"
-                                 "border-width: 2px;"
-                                 "background-color: #fcc82b;"
-                                 "border-color: #fcc82b;"
+                                 "border-width: 3px;"
+                                 "background-color: #fcdcae;"
+                                 "border-color: #f79914;"
                                  "border-radius: 3px")
-        self.btn_3.setStyleSheet("color: white;"
+        self.btn_3.setStyleSheet("color: black;"
                                  "border-style: solid;"
-                                 "border-width: 2px;"
-                                 "background-color: #4a7ac2;"
+                                 "border-width: 3px;"
+                                 "background-color: #87CEFA;"
                                  "border-color: #4a7ac2;"
+                                 "border-radius: 3px")
+        self.btn_4.setStyleSheet("color: black;"
+                                 "border-style: solid;"
+                                 "border-width: 3px;"
+                                 "background-color: #ebf0c0;"
+                                 "border-color: #c4d900;"
                                  "border-radius: 3px")
 
     def btn1(self):
         self.re = 1
         self.hide()
-        #playsound(self.audio_out)
+        # os.system(self.wav_out)
+        # play(self.out_sound)
+        playsound(self.wav_out)
+        # self.send_conn.send(self.wav_out)
         check_response(self, self.path)
 
     def btn2(self):
         self.re = 2
         self.hide()
-        #playsound(self.audio_out)
+        # os.system(self.wav_out)
+        # play(self.out_sound)
+        playsound(self.wav_out)
+        # self.send_conn.send(self.wav_out)
         check_response(self, self.path)
 
     def btn3(self):
         self.re = 3
         self.hide()
-        #playsound(self.audio_out)
+        # os.system(self.wav_out)
+        # play(self.out_sound)
+        playsound(self.wav_out)
+        # self.send_conn.send(self.wav_out)
         check_response(self, self.path)
+
+    def btn4(self):
+        self.re = 4
+        self.hide()
+        # os.system(self.wav_out)
+        # play(self.out_sound)
+        playsound(self.wav_out)
+        # self.send_conn.send(self.wav_out)
+        check_response(self, self.path)
+
+# def play_audio(d_name, recv_conn, stop_event):
+#     print(f"[INFO] '{d_name}' process is started.")
+
+#     while True:
+#         wav = recv_conn.recv()
+#         print(wav)
+#         # playsound(wav)
+#         if stop_event.is_set():
+#             break
+
+#     print(f"[INFO] '{d_name}' process is terminated.")

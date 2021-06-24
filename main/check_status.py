@@ -85,9 +85,11 @@ def check_driver(DRIVER_LIST):
 def check_odd():
     check_odd = 'n'
     while check_odd != 'y' :
-        ODD = input("[REQUEST] Enter current odd meter : ")
-        check_odd = input("[REQUEST] Is current odd meter {} km? [y/n] ".format(int(ODD)))
-    
+        try:
+            ODD = input("[REQUEST] Enter current odd meter : ")
+            check_odd = input("[REQUEST] Is current odd meter {} km? [y/n] ".format(int(ODD)))
+        except:
+            print("Invalid input. Try again.")
     return ODD
 
 def check_intention():

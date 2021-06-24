@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>472</width>
-    <height>378</height>
+    <width>491</width>
+    <height>552</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>10</x>
      <y>70</y>
-     <width>451</width>
-     <height>301</height>
+     <width>471</width>
+     <height>471</height>
     </rect>
    </property>
    <property name="text">
@@ -31,7 +31,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>451</width>
+     <width>471</width>
      <height>51</height>
     </rect>
    </property>
@@ -39,10 +39,12 @@
     <font>
      <family>Agency FB</family>
      <pointsize>20</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>잘못 선택 하셨으면 아래 키워드 터치!!!</string>
+    <string>잘못 선택 하셨으면 아래 키워드 터치!!!!!!</string>
    </property>
   </widget>
  </widget>

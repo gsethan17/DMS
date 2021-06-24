@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>552</width>
-    <height>885</height>
+    <width>1024</width>
+    <height>1300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,67 +16,73 @@
   <widget class="QPushButton" name="btn_1">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>150</y>
-     <width>531</width>
-     <height>201</height>
+     <x>20</x>
+     <y>300</y>
+     <width>471</width>
+     <height>471</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Agency FB</family>
-     <pointsize>20</pointsize>
+     <pointsize>40</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>화남/흥분/신남</string>
+    <string>화남/짜증</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_2">
+  <widget class="QPushButton" name="btn_4">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>400</y>
-     <width>531</width>
-     <height>201</height>
+     <x>530</x>
+     <y>810</y>
+     <width>471</width>
+     <height>471</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Agency FB</family>
-     <pointsize>20</pointsize>
+     <pointsize>40</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>두려움/행복/평범</string>
+    <string>행복/보통</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_3">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>650</y>
-     <width>531</width>
-     <height>201</height>
+     <x>20</x>
+     <y>810</y>
+     <width>471</width>
+     <height>471</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Agency FB</family>
-     <pointsize>20</pointsize>
+     <pointsize>40</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>슬픔/피곤/편안</string>
+    <string>슬픔/피곤</string>
    </property>
   </widget>
   <widget class="QLabel" name="lbl_driver">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>10</y>
-     <width>51</width>
-     <height>21</height>
+     <width>191</width>
+     <height>111</height>
     </rect>
    </property>
    <property name="text">
@@ -86,21 +92,43 @@
   <widget class="QLabel" name="lbl_image">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>531</width>
-     <height>391</height>
+     <x>0</x>
+     <y>130</y>
+     <width>1021</width>
+     <height>171</height>
     </rect>
    </property>
    <property name="text">
     <string>TextLabel</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btn_2">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>300</y>
+     <width>471</width>
+     <height>471</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>40</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>신남/놀람</string>
+   </property>
+  </widget>
   <zorder>lbl_image</zorder>
   <zorder>btn_1</zorder>
-  <zorder>btn_2</zorder>
+  <zorder>btn_4</zorder>
   <zorder>btn_3</zorder>
   <zorder>lbl_driver</zorder>
+  <zorder>btn_2</zorder>
  </widget>
  <resources/>
  <connections/>
