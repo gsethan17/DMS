@@ -116,7 +116,7 @@ def main():
     for proc in procs:
         proc.start()
     ### Process terminate ###
-    time.sleep(5)
+    time.sleep(3)
 
     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
     myWindow.show()
