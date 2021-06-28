@@ -77,12 +77,12 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
     df = pd.DataFrame(columns=['timestamp'])
     can_monitoring = {'ESP12': -1, 'SAS11': -1, 'WHL_SPD11': -1}
 
-    sync_thread()
-    print(f"[INFO] '{d_name}' process starts recording.")
     cnt = 0
     first = True
     time_total = 0.
     cycle = 0
+    sync_thread()
+    print(f"[INFO] '{d_name}' process starts recording.")
     start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
     while(True):
         try:
@@ -219,20 +219,37 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     colorizer1.set_option(rs.option.min_distance,0.01)
     colorizer1.set_option(rs.option.max_distance, 0.15)
             
+    df = pd.DataFrame(columns=['timestamp'])
+    df_flag = 1
+    start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
 
-    # global lock
+    ### global lock ###
     sync_thread()
     print(f"[INFO] '{d_name}' process starts recording.")
     try:
         while True:
-            ### Camera 1 ###
+            
             ### Wait for a coherent pair of frames: depth and color ###
+            df = df[0:0]
+            
             frames_1 = pipeline_1.wait_for_frames()
+            frames_2 = pipeline_2.wait_for_frames()
+            
+            df = df.append({'timestamp': time.time()}, ignore_index=True)
+            if df_flag:
+                df.to_csv(VIDEO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
+                df_flag = 0
+            else:
+                df.to_csv(VIDEO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
+
+
             # frameset3 = align_depth.process(frames_1)
             # frameset2 = align_color.process(frames_1)
             # frameset = align_depth.process(frameset2)
 
             # color_frame_1 = frameset2.get_color_frame()
+
+            ### Camera 1 ###
             color_frame_1 = frames_1.get_color_frame()
             # color_intr = color_frame_1.profile.as_video_stream_profile().intrinsics
             # print("=================")
@@ -260,8 +277,7 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             ir_img_1 = cv2.cvtColor(ir_image_1, cv2.COLOR_GRAY2BGR)
             
             ### Camera 2 ###
-            ### Wait for a coherent pair of frames: depth and color ###
-            frames_2 = pipeline_2.wait_for_frames()
+            # frames_2 = pipeline_2.wait_for_frames()
             depth_frame_2 = frames_2.get_depth_frame()
             color_frame_2 = frames_2.get_color_frame()
             ir_frame_2 = frames_2.get_infrared_frame()
@@ -323,9 +339,12 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
 def visualize_video(d_name, DATASET_PATH, recv_conn, stop_event):
     print(f"[INFO] '{d_name}' process is started.")
     sync_thread()
+    
     while True:
         image = recv_conn.recv()
-        cv2.imshow('ImageWindow', image)
+        cv2.namedWindow("IMAGE MONITORING", cv2.WINDOW_AUTOSIZE)
+        cv2.moveWindow("IMAGE MONITORING", 1400, 100)    
+        cv2.imshow('IMAGE MONITORING', image)
         cv2.waitKey(1)
 
         if stop_event.is_set():
@@ -354,12 +373,24 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_even
     data = []
     flag = False
     
+    df = pd.DataFrame(columns=['timestamp'])
+    df_flag = 1
+
     sync_thread()
     print(f"[INFO] '{d_name}' process starts recording.")
     start_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
     while True:
         try:
+            df = df[0:0]
             audio = stream.read(CHUNK)
+            
+            df = df.append({'timestamp': time.time()}, ignore_index=True)
+            if df_flag:
+                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
+                df_flag = 0
+            else:
+                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
+
             frame = np.fromstring(audio, dtype = np.int16)
 
             if not flag : 

@@ -89,7 +89,7 @@ def check_odd():
             ODD = input("[REQUEST] Enter current odd meter : ")
             check_odd = input("[REQUEST] Is current odd meter {} km? [y/n] ".format(int(ODD)))
         except:
-            print("Invalid input. Try again.")
+            print("[INFO] Invalid input. Try again.")
     return ODD
 
 def check_intention():
