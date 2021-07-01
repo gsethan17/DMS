@@ -120,7 +120,7 @@ def main():
     ### Process terminate ###
     time.sleep(4)
 
-    app = QApplication(sys.argv)
+    # app = QApplication(sys.argv)
     playsound("../HMI/in.wav")
     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
     myWindow.show()

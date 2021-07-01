@@ -431,9 +431,9 @@ class check_response(QDialog):
         self.PATH = DATASET_PATH
         
         self.clicked_time = QTimer()
-        self.clicked_time.setInterval(5000)
+        self.clicked_time.setInterval(10000)
         self.replied_time = QTimer()
-        self.replied_time.setInterval(10000)
+        self.replied_time.setInterval(300000)
         self.wav_in = '../HMI/in.wav'
         self.in_sound = AudioSegment.from_file(self.wav_in)
 
@@ -531,9 +531,9 @@ class WindowClass(QMainWindow, form_class):
         self.remind_time = QTimer()
         self.remind_time.setInterval(20000)
         self.record_time = QTimer()
-        self.record_time.setInterval(100000)
+        self.record_time.setInterval(40000)
         self.reshow_time = QTimer()
-        self.reshow_time.setInterval(200000)
+        self.reshow_time.setInterval(240000)
         print('show')
         self.setGeometry(0, 0, 1024, 1300)
         
