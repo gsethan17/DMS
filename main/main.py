@@ -19,7 +19,7 @@ def main():
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odd, check_intention
     
     ###  CAN setting  ###
-    CAN_basePath = '/media/imlab/62C1-3A4A/CAN_dbc/20210527'
+    CAN_basePath = '../dbc'
     P_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_P_CAN_KOOKMIN_20210527.dbc')
     C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
     can_bus = can.interface.Bus('can0', bustype='socketcan')
