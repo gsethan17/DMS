@@ -305,7 +305,8 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             dp_color_1 = cv2.resize(color_image_1, (500,400))
             dp_color_2 = cv2.resize(color_image_2, (500,400))
             
-            
+            color_image_1 = cv2.resize(color_image_1, (450,350))
+            color_image_2 = cv2.resize(color_image_2, (450,350))
             images1 = np.hstack((color_image_1, color_image_2))
             send_conn.send(images1)
 
@@ -342,8 +343,9 @@ def visualize_video(d_name, DATASET_PATH, recv_conn, stop_event):
     
     while True:
         image = recv_conn.recv()
+        # cv2.resize(image, (100,100))
         cv2.namedWindow("IMAGE MONITORING", cv2.WINDOW_AUTOSIZE)
-        cv2.moveWindow("IMAGE MONITORING", 1400, 100)    
+        cv2.moveWindow("IMAGE MONITORING", 120, 1350)    
         cv2.imshow('IMAGE MONITORING', image)
         cv2.waitKey(1)
 
@@ -492,8 +494,9 @@ class check_response(QDialog):
     def btn(self):
         self.clicked_time.stop()
         self.replied_time.stop()
-        self.close()
-        self.parent.show()
+        self.hide()
+        playsound(self.wav_in)
+        self.show_parent()
 
     def record_csv(self):
         self.clicked_time.stop()
@@ -504,13 +507,15 @@ class check_response(QDialog):
         self.hide()
 
     def show_parent(self):
+        self.parent.remind_time.start()
+        self.parent.record_time.start()
         self.parent.show()
 
     def replied(self):
         self.replied_time.stop()
         playsound(self.wav_in)
         self.show_parent()
-
+    
 class WindowClass(QMainWindow, form_class):
     def __init__(self, DRIVER_NAME, DATASET_PATH):
         super().__init__()
@@ -523,6 +528,13 @@ class WindowClass(QMainWindow, form_class):
         self.start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
         self.filename = self.start_time + '.csv'
 
+        self.remind_time = QTimer()
+        self.remind_time.setInterval(20000)
+        self.record_time = QTimer()
+        self.record_time.setInterval(100000)
+        self.reshow_time = QTimer()
+        self.reshow_time.setInterval(200000)
+        print('show')
         self.setGeometry(0, 0, 1024, 1300)
         
         pal = QPalette()
@@ -541,6 +553,8 @@ class WindowClass(QMainWindow, form_class):
 
         self.re = 0
         self.wav_out = '../HMI/out.wav'
+        self.wav_in = '../HMI/in.wav'
+        self.wav_no_answer = '../HMI/no_answer.wav'
 
         self.setWindowTitle('기록중')
         self.setWindowModality(2)
@@ -584,7 +598,15 @@ class WindowClass(QMainWindow, form_class):
                                  "border-color: #c4d900;"
                                  "border-radius: 3px")
 
+        self.remind_time.timeout.connect(self.remind)
+        self.record_time.timeout.connect(self.record)
+        self.reshow_time.timeout.connect(self.reshow)
+        self.remind_time.start()
+        self.record_time.start()
+  
     def btn1(self):
+        self.remind_time.stop()
+        self.record_time.stop()
         self.re = 1
         self.hide()
         # os.system(self.wav_out)
@@ -594,6 +616,8 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn2(self):
+        self.remind_time.stop()
+        self.record_time.stop()
         self.re = 2
         self.hide()
         # os.system(self.wav_out)
@@ -603,6 +627,8 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn3(self):
+        self.remind_time.stop()
+        self.record_time.stop()
         self.re = 3
         self.hide()
         # os.system(self.wav_out)
@@ -612,6 +638,8 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn4(self):
+        self.remind_time.stop()
+        self.record_time.stop()
         self.re = 4
         self.hide()
         # os.system(self.wav_out)
@@ -619,6 +647,28 @@ class WindowClass(QMainWindow, form_class):
         playsound(self.wav_out)
         # self.send_conn.send(self.wav_out)
         check_response(self, self.path)
+
+    def remind(self):
+        self.remind_time.stop()
+        playsound(self.wav_in)
+
+    def record(self):
+        self.record_time.stop()
+        self.reshow_time.start()
+        raw_data = [(time.time(), self.name, 0)]
+        data = pd.DataFrame(raw_data, columns=self.df.columns)
+        self.df = self.df.append(data)
+        self.df.to_csv(f'{self.path}', index=False, encoding='utf-8-sig')
+        self.hide()
+        playsound(self.wav_no_answer)
+
+    def reshow(self):
+        self.reshow_time.stop()
+        self.remind_time.start()
+        self.record_time.start()
+        playsound(self.wav_in)
+        self.show()
+
 
 # def play_audio(d_name, recv_conn, stop_event):
 #     print(f"[INFO] '{d_name}' process is started.")
@@ -631,3 +681,21 @@ class WindowClass(QMainWindow, form_class):
 #             break
 
 #     print(f"[INFO] '{d_name}' process is terminated.")
+
+# def receive_HMI(d_name, DATASET_PATH, DRIVER_NAME, stop_event):
+#     print(f"[INFO] '{d_name}' process is started.")
+
+#     sync_thread()
+
+#     playsound("../HMI/in.wav")
+#     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
+#     myWindow.show()
+
+#     while True:
+#         if stop_event.is_set():
+#             QCoreApplication.instance().quit
+#             break
+
+#     print(f"[INFO] '{d_name}' process is terminated.")
+    
+#     return

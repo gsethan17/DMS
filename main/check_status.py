@@ -64,9 +64,9 @@ def check_driver(DRIVER_LIST):
         print("#" * 10, "DRIVER ID", "#" * 10)
         for i, name in enumerate(DRIVER_LIST):
             if i != len(DRIVER_LIST) - 1:
-                print(f"{DRIVER_LIST[i]}: {DRIVER_LIST.index(DRIVER_LIST[i])}, ", end=' ')
+                print(f"{DRIVER_LIST.index(DRIVER_LIST[i])}: {DRIVER_LIST[i]}, ", end=' ')
             else:
-                print(f"{DRIVER_LIST[i]}: {DRIVER_LIST.index(DRIVER_LIST[i])}")
+                print(f"{DRIVER_LIST.index(DRIVER_LIST[i])}: {DRIVER_LIST[i]}")
         print("#" * 31)
         print()
 

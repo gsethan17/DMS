@@ -12,9 +12,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
+from playsound import playsound
 
 def main():
-    from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass
+    from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass #, receive_HMI
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odd, check_intention
     
     ###  CAN setting  ###
@@ -44,7 +45,7 @@ def main():
     
     
     ###  HMI setting  ###
-    
+
     #####################
 
 
@@ -59,7 +60,7 @@ def main():
     
 
     ### DRIVER CHECK ###
-    DRIVER_LIST = ["임세준", "오기성", "박중후", "김태산", "정의석"]    # [todo] read saved driver list
+    DRIVER_LIST = ["오기성", "박중후", "김태산", "정의석"]    # [todo] read saved driver list
     DRIVER_NAME = check_driver(DRIVER_LIST)
 
     
@@ -85,13 +86,14 @@ def main():
     send_conn, recv_conn = multiprocessing.Pipe()
     # audio_send, audio_recv = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'audio']#'video', 'video_visual', 'audio']#, 'sensor']
-    proc_functions = [receive_CAN, receive_audio]# receive_video, visualize_video, receive_audio]#, receive_sensor]
+    data_names = ['CAN', 'audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
+    proc_functions = [receive_CAN, receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
     func_args = {'CAN': (P_db, C_db, can_bus),
                 # 'video': (send_conn),
                 # 'video_visual': (recv_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 # 'sensor': (),
+                # 'HMI': [DRIVER_NAME],
                 }
 
     #####################
@@ -116,8 +118,10 @@ def main():
     for proc in procs:
         proc.start()
     ### Process terminate ###
-    time.sleep(3)
+    time.sleep(4)
 
+    app = QApplication(sys.argv)
+    playsound("../HMI/in.wav")
     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
     myWindow.show()
 
@@ -125,9 +129,11 @@ def main():
     while terminate_signal != '':
         print("[REQUEST] Invalid input! Press 'Enter'")
         terminate_signal = input()
-    
+    QCoreApplication.instance().quit
     stop_event.set()
-        
+
+    # QCoreApplication.instance().quit    
+
     ### thread terminate double check ###
     for proc in procs:
         proc.join()
@@ -152,4 +158,4 @@ def main():
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main()
-    QCoreApplication.instance().quit
+    # QCoreApplication.instance().quit
