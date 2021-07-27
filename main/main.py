@@ -68,7 +68,8 @@ def main():
     START_ODD = check_odd()
 
     ### DATASET path setting ###
-    DATASET_PATH = "../DMS_dataset/"
+    # DATASET_PATH = "/media/imlab/62C1-3A4A/DMS_dataset_usb/"
+    DATASET_PATH = "/media/imlab/483C8EA13C8E8A20/dms/"
     if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
         os.mkdir(DATASET_PATH + DRIVER_NAME)
     DATASET_PATH += (DRIVER_NAME + "/")
@@ -84,11 +85,14 @@ def main():
     procs = []
     stop_event = multiprocessing.Event()
     send_conn, recv_conn = multiprocessing.Pipe()
+    send_can, recv_can = multiprocessing.Pipe()
     # audio_send, audio_recv = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
-    proc_functions = [receive_CAN, receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
-    func_args = {'CAN': (P_db, C_db, can_bus),
+    # data_names = ['CAN', 'audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
+    data_names = ['audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
+    # proc_functions = [receive_CAN, receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
+    proc_functions = [receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
+    func_args = {#'CAN': (P_db, C_db, can_bus),
                 # 'video': (send_conn),
                 # 'video_visual': (recv_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
@@ -110,9 +114,11 @@ def main():
     for d_name, proc_func in zip(data_names, proc_functions):
         proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
         procs.append(proc)
+    proc = multiprocessing.Process(target=receive_CAN, args=('CAN', DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event))
+    procs.append(proc)
     proc = multiprocessing.Process(target=receive_video, args=('video', DATASET_PATH, send_conn, stop_event))
     procs.append(proc)
-    proc = multiprocessing.Process(target=visualize_video, args=('video_visual', DATASET_PATH, recv_conn, stop_event))
+    proc = multiprocessing.Process(target=visualize_video, args=('video_visual', DATASET_PATH, recv_conn, recv_can, stop_event))
     procs.append(proc)
     
     for proc in procs:

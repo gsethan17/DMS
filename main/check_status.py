@@ -86,8 +86,8 @@ def check_odd():
     check_odd = 'n'
     while check_odd != 'y' :
         try:
-            ODD = input("[REQUEST] Enter current odd meter : ")
-            check_odd = input("[REQUEST] Is current odd meter {} km? [y/n] ".format(int(ODD)))
+            ODD = input("[REQUEST] Enter current odometer : ")
+            check_odd = input("[REQUEST] Is current odometer {} km? [y/n] ".format(int(ODD)))
         except:
             print("[INFO] Invalid input. Try again.")
     return ODD

@@ -47,8 +47,8 @@ def sync_thread():
     while thread_count.value != TOTAL_THREADS_NUM.value:
         pass
 
-def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
-    print(f"[INFO] '{d_name}' process is started.")
+def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event):
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is started.")
 
     CAN_PATH = DATASET_PATH + '/CAN/'
     if not os.path.isdir(CAN_PATH):
@@ -74,9 +74,9 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
         if msg.name == 'NAVI_STD_SEG_E':
             db_msg.append(msg)
     
-    df = pd.DataFrame(columns=['timestamp'])
+    # df = pd.DataFrame(columns=['timestamp'])
+    df = pd.DataFrame(columns=['timestamp', 'timestamp2'])
     can_monitoring = {'ESP12': -1, 'SAS11': -1, 'WHL_SPD11': -1}
-
     cnt = 0
     first = True
     time_total = 0.
@@ -87,6 +87,9 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
     while(True):
         try:
             can_msg = can_bus.recv()
+            df['timestamp2'] = time.time()
+            # print(f"can_time[{can_msg.timestamp}] linux_time[{df['timestamp2'][cycle]}]", end='r')
+            # print(f"can_time[{can_msg.timestamp}]", end='\r')
             st = time.time()
             for msg in db_msg:
                 if can_msg.arbitration_id == msg.frame_id:
@@ -112,9 +115,12 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
                         can_monitoring['ESP12'] = can_dict['CYL_PRES']
                     elif msg.name == 'SAS11':
                         can_monitoring['SAS11'] = can_dict['SAS_Angle']
+                        # send_can.send(can_dict['SAS_Angle'])
+
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
-            # print("CYL_PRES[{:08.5f}],  SAS_Angle[{:08.5f}],  WHL_SPD[{:08.5f}]".format(can_monitoring['ESP12'], can_monitoring['SAS11'], can_monitoring['WHL_SPD11']), end='\r')
+            
+            print("WHL_SPD[{:08.5f}]  CYL_PRES[{:08.5f}]  SAS_Angle[{:08.5f}]".format(can_monitoring['WHL_SPD11'], can_monitoring['ESP12'], can_monitoring['SAS11']), end='\r')
             time_total += (time.time() - st)
             cycle += 1
         
@@ -128,11 +134,11 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, stop_event):
                 break
 
     print(f"[INFO] # of CAN[{cnt}] MEAN_TIME[{time_total / cycle:.6f}] CYCLE[{cycle}]")
-    print(f"[INFO] '{d_name}' process is terminated.")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is terminated.")
 
 
 def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
-    print(f"[INFO] '{d_name}' process is started.")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is started.")
 
     VIDEO_PATH = DATASET_PATH + '/video/'
     if not os.path.isdir(VIDEO_PATH):
@@ -148,34 +154,35 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     ### ...from Camera 1 ###
     pipeline_1 = rs.pipeline()
     config_1 = rs.config()
-    config_1.enable_device("102422072555")
-    config_1.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    config_1.enable_stream(rs.stream.infrared, 1, 640, 480, rs.format.y8, 30)
+    # config_1.enable_device("102422072555")
+    config_1.enable_device("043322071182")
+    config_1.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+    config_1.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    config_1.enable_stream(rs.stream.infrared, 1, 1280, 720, rs.format.y8, 30)
 
     ### ...from Camera 2 ###
     pipeline_2 = rs.pipeline()
     config_2 = rs.config()
-    config_2.enable_device('043322071182')
-    config_2.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    config_2.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    config_2.enable_stream(rs.stream.infrared, 2, 640, 480, rs.format.y8, 30)
+    # config_2.enable_device('043322071182')
+    config_2.enable_device('102422072555')
+    config_2.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+    config_2.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    config_2.enable_stream(rs.stream.infrared, 2, 1280, 720, rs.format.y8, 30)
     
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    colorVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'color_front2.avi', fourcc, 30.0, (640,480))
-    depthVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'depth_front2.avi', fourcc, 30.0, (640,480))
-    irVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'ir_front2.avi', fourcc, 30.0, (640,480))
+    colorVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'color_front2.avi', fourcc, 30.0, (1280, 720))
+    # depthVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'depth_front2.avi', fourcc, 30.0, (1280, 720))
+    irVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'ir_front2.avi', fourcc, 30.0, (1280, 720))
 
-    colorVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'color_side2.avi', fourcc, 30.0, (640,480))
-    depthVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'depth_side2.avi', fourcc, 30.0, (640,480))
-    irVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'ir_side2.avi', fourcc, 30.0, (640,480))
+    colorVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'color_side2.avi', fourcc, 30.0, (1280, 720))
+    # depthVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'depth_side2.avi', fourcc, 30.0, (1280, 720))
+    irVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'ir_side2.avi', fourcc, 30.0, (1280, 720))
 
 
     ### Start streaming from both cameras ###
     pipeline_profile_1 = pipeline_1.start(config_1)
-    # intr = pipeline_profile_1.as_video_stream_profile().get_intrinsics()
-    # depth_sensor1 = pipeline_profile_1.get_device().first_depth_sensor()
+    depth_sensor1 = pipeline_profile_1.get_device().first_depth_sensor()
     depth_sensor1 = pipeline_profile_1.get_device().query_sensors()[0]
     depth_sensor1.set_option(rs.option.enable_auto_exposure, True)
     
@@ -186,9 +193,9 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     # clipping_distance  = clipping_distance_in_meters/depth_scale
 
 
-    align_to_color = rs.stream.color
+    # align_to_color = rs.stream.color
     # align_to_depth = rs.stream.infrared
-    align_color = rs.align(align_to_color)
+    # align_color = rs.align(align_to_color)
     # align_depth = rs.align(align_to_depth)
     # infrared_scale = infrared_sensor.get_infrared_scale()
     # print("Infrared Scale is: ", infrared_scale)
@@ -202,22 +209,15 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     set_emitter = 0
 
     depth_sensor1.set_option(rs.option.emitter_enabled, set_emitter)
-    # depth_sensor1.set_option(rs.option.visual_preset, 1)
+    depth_sensor1.set_option(rs.option.visual_preset, 2)
     depth_sensor2.set_option(rs.option.emitter_enabled, set_emitter)
-    # depth_sensor2.set_option(rs.option.visual_preset, 1)
+    depth_sensor2.set_option(rs.option.visual_preset, 2)
 
     colorizer = rs.colorizer()
-    colorizer.set_option(rs.option.visual_preset, 0)
-    # colorizer.set_option(rs.option.histogram_equalizer_enabled, True)
-    colorizer.set_option(rs.option.min_distance,0.7)
-    colorizer.set_option(rs.option.max_distance, 4)
-
+    colorizer.set_option(rs.option.visual_preset, 2)
+    
     colorizer1 = rs.colorizer()
-    colorizer1.set_option(rs.option.histogram_equalization_enabled, True)
-    colorizer1.set_option(rs.option.visual_preset, 0)
-    # colorizer.set_option(rs.option.histogram_equalizer_enabled, True)
-    colorizer1.set_option(rs.option.min_distance,0.01)
-    colorizer1.set_option(rs.option.max_distance, 0.15)
+    colorizer1.set_option(rs.option.visual_preset, 2)
             
     df = pd.DataFrame(columns=['timestamp'])
     df_flag = 1
@@ -229,10 +229,11 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     try:
         while True:
             
-            ### Wait for a coherent pair of frames: depth and color ###
+            ### Wait for a coh` erent pair of frames: depth and color ###
             df = df[0:0]
-            
+            # print("pipeline1")
             frames_1 = pipeline_1.wait_for_frames()
+            # print("pipeline2")
             frames_2 = pipeline_2.wait_for_frames()
             
             df = df.append({'timestamp': time.time()}, ignore_index=True)
@@ -243,27 +244,14 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
                 df.to_csv(VIDEO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
 
 
-            # frameset3 = align_depth.process(frames_1)
-            # frameset2 = align_color.process(frames_1)
-            # frameset = align_depth.process(frameset2)
-
-            # color_frame_1 = frameset2.get_color_frame()
-
             ### Camera 1 ###
             color_frame_1 = frames_1.get_color_frame()
-            # color_intr = color_frame_1.profile.as_video_stream_profile().intrinsics
-            # print("=================")
-            # print(color_intr)
             ir_frame_1 = frames_1.get_infrared_frame()
-            # ir_intr = ir_frame_1.profile.as_video_stream_profile().intrinsics
-            # print(ir_intr)
             depth_frame_1 = frames_1.get_depth_frame()
-            # depth_intr = depth_frame_1.profile.as_video_stream_profile().intrinsics
-            # print(depth_intr)
-
             
-
+            
             if not depth_frame_1 or not color_frame_1 or not ir_frame_1:
+            # if not color_frame_1:
                 print("error")
                 continue
 
@@ -272,8 +260,18 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             color_image_1 = np.asanyarray(color_frame_1.get_data())
             ir_image_1 = np.asanyarray(ir_frame_1.get_data())
             
+            # print("BEFORE")
+            # print(np.max(depth_image_1))
+            # print(np.min(depth_image_1))
+            # print(depth_image_1)
             ### Apply colormap on depth image (image must be converted to 8-bit per pixel first) ###
-            depth_colormap_1 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_1, alpha=1.0) , cv2.COLORMAP_JET)
+           
+            
+            # depth_colormap_1 = cv2.applyColorMap(depth_image_1 , cv2.COLORMAP_BONE)
+            # print("AFTER")
+            # print(np.max(depth_colormap_1))
+            # print(np.min(depth_colormap_1))
+            # print(depth_colormap_1)
             ir_img_1 = cv2.cvtColor(ir_image_1, cv2.COLOR_GRAY2BGR)
             
             ### Camera 2 ###
@@ -282,6 +280,7 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             color_frame_2 = frames_2.get_color_frame()
             ir_frame_2 = frames_2.get_infrared_frame()
             if not depth_frame_2 or not color_frame_2:
+            # if not color_frame_2:
                 continue
             
             ### Convert images to numpy arrays ###
@@ -291,24 +290,24 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             ir_img_2 = cv2.cvtColor(ir_image_2, cv2.COLOR_GRAY2BGR)
 
             ### Apply colormap on depth image (image must be converted to 8-bit per pixel first) ###
-            depth_colormap_2 = cv2.applyColorMap(cv2.convertScaleAbs(depth_image_2, alpha=1.0), cv2.COLORMAP_JET)
-    
+           
+            
             colorVideo1.write(color_image_1)
-            depthVideo1.write(depth_colormap_1)
+            # depthVideo1.write(depth_image_1)
             irVideo1.write(ir_img_1)
 
 
             colorVideo2.write(color_image_2)
-            depthVideo2.write(depth_colormap_2)
+            # depthVideo2.write(depth_image_2)
             irVideo2.write(ir_img_2)
 
-            dp_color_1 = cv2.resize(color_image_1, (500,400))
-            dp_color_2 = cv2.resize(color_image_2, (500,400))
+            # dp_color_1 = cv2.resize(color_image_1, (500,400))
+            # dp_color_2 = cv2.resize(color_image_2, (500,400))
             
-            color_image_1 = cv2.resize(color_image_1, (450,350))
-            color_image_2 = cv2.resize(color_image_2, (450,350))
-            images1 = np.hstack((color_image_1, color_image_2))
-            send_conn.send(images1)
+            # color_image_1 = cv2.resize(color_image_1, (450,350))
+            # color_image_2 = cv2.resize(color_image_2, (450,350))
+            # images1 = np.hstack((color_image_1, color_image_2))
+            # send_conn.send(images1)
 
             ### Stack all images horizontally ###
             # images1 = np.hstack((color_image_1, depth_colormap_1, ir_img_1))
@@ -328,36 +327,41 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             
             if stop_event.is_set():
                 break
+    
+    except Exception as e:
+        print(e)
     finally:
-
+        print("Stop Streaming")
         ### Stop streaming ###
         pipeline_1.stop()
         pipeline_2.stop()
 
-    print(f"[INFO] '{d_name}' process is terminated.")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is terminated.")
 
 
-def visualize_video(d_name, DATASET_PATH, recv_conn, stop_event):
-    print(f"[INFO] '{d_name}' process is started.")
+def visualize_video(d_name, DATASET_PATH, recv_conn,recv_can, stop_event):
+    # print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is started.")
     sync_thread()
     
-    while True:
-        image = recv_conn.recv()
-        # cv2.resize(image, (100,100))
-        cv2.namedWindow("IMAGE MONITORING", cv2.WINDOW_AUTOSIZE)
-        cv2.moveWindow("IMAGE MONITORING", 120, 1350)    
-        cv2.imshow('IMAGE MONITORING', image)
-        cv2.waitKey(1)
+    # while True:
+    #     image = recv_conn.recv()
+    #     sas = recv_can.recv()
+    #     # cv2.resize(image, (100,100))
+    #     cv2.namedWindow("IMAGE MONITORING", cv2.WINDOW_AUTOSIZE)
+    #     cv2.moveWindow("IMAGE MONITORING", 120, 1350)
+    #     cv2.putText(image, str(sas), (100, 100), cv2.FONT_HERSHEY_PLAIN, 7.0, (0,0,255), 2)
+    #     cv2.imshow('IMAGE MONITORING', image)
+    #     cv2.waitKey(1)
 
-        if stop_event.is_set():
-            cv2.destroyAllWindows()
-            break
+    #     if stop_event.is_set():
+    #         cv2.destroyAllWindows()
+    #         break
         
-    print(f"[INFO] '{d_name}' process is terminated.")
+    # print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is terminated.")
 
 
 def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_event):
-    print(f"[INFO] '{d_name}' process is started.")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is started.")
 
     AUDIO_PATH = DATASET_PATH + '/audio/'
     if not os.path.isdir(AUDIO_PATH):
@@ -414,7 +418,7 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_even
     p.terminate()
     write(f"{AUDIO_PATH + start_time}.wav", RATE, data.astype(np.int16))
 
-    print(f"[INFO] '{d_name}' process is terminated.")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is terminated.")
 
 def receive_sensor(d_name, DATASET_PATH, stop_event):
     sync_thread()
@@ -432,8 +436,9 @@ class check_response(QDialog):
         
         self.clicked_time = QTimer()
         self.clicked_time.setInterval(10000)
-        self.replied_time = QTimer()
-        self.replied_time.setInterval(300000)
+        # self.replied_time = QTimer()
+        # self.replied_time.setInterval(300000)
+        # self.replied_time.setInterval(20000)
         self.wav_in = '../HMI/in.wav'
         self.in_sound = AudioSegment.from_file(self.wav_in)
 
@@ -485,18 +490,19 @@ class check_response(QDialog):
         self.show()
 
         self.clicked_time.timeout.connect(self.record_csv)
-        self.replied_time.timeout.connect(self.replied)
+        # self.replied_time.timeout.connect(self.replied)
         self.btn_re.clicked.connect(self.btn)
 
         self.clicked_time.start()
-        self.replied_time.start()
+        # self.replied_time.start()
 
     def btn(self):
         self.clicked_time.stop()
-        self.replied_time.stop()
+        # self.replied_time.stop()
         self.hide()
         playsound(self.wav_in)
-        self.show_parent()
+        self.parent.remind_time.start()
+        self.parent.show()
 
     def record_csv(self):
         self.clicked_time.stop()
@@ -505,16 +511,17 @@ class check_response(QDialog):
         self.parent.df = self.parent.df.append(data)
         self.parent.df.to_csv(f'{self.PATH}', index=False, encoding='utf-8-sig')
         self.hide()
+        self.show_parent()
 
     def show_parent(self):
-        self.parent.remind_time.start()
-        self.parent.record_time.start()
+        self.parent.request_time.start()
+        # self.parent.remind_time.start()
+        # self.parent.record_time.start()
         self.parent.show()
 
-    def replied(self):
-        self.replied_time.stop()
-        playsound(self.wav_in)
-        self.show_parent()
+    # def replied(self):
+    #     self.replied_time.stop()
+    #     playsound(self.wav_in)
     
 class WindowClass(QMainWindow, form_class):
     def __init__(self, DRIVER_NAME, DATASET_PATH):
@@ -529,16 +536,23 @@ class WindowClass(QMainWindow, form_class):
         self.filename = self.start_time + '.csv'
 
         self.remind_time = QTimer()
-        self.remind_time.setInterval(20000)
+        self.remind_time.setInterval(10000)
+        # self.remind_time.setInterval(10000)
         self.record_time = QTimer()
-        self.record_time.setInterval(40000)
+        self.record_time.setInterval(10000)
+        # self.record_time.setInterval(10000)
         self.reshow_time = QTimer()
-        self.reshow_time.setInterval(240000)
+        self.reshow_time.setInterval(40000)
+        # self.reshow_time.setInterval(20000)
+        self.request_time = QTimer()
+        # self.reshow_time.setInterval(240000)
+        self.request_time.setInterval(50000)
         print('show')
         self.setGeometry(0, 0, 1024, 1300)
         
         pal = QPalette()
-        pal.setColor(QPalette.Background,QColor(255,255,255))
+        pal.setColor(QPalette.Background,QColor(0, 0, 0))
+        
         self.lbl_driver.setFont(QFont("Gulim",44))
         self.setPalette(pal)
 
@@ -601,12 +615,19 @@ class WindowClass(QMainWindow, form_class):
         self.remind_time.timeout.connect(self.remind)
         self.record_time.timeout.connect(self.record)
         self.reshow_time.timeout.connect(self.reshow)
+        self.request_time.timeout.connect(self.request)
         self.remind_time.start()
-        self.record_time.start()
-  
+
+    def request(self):
+        self.remind_time.start()
+        self.request_time.stop()
+        playsound(self.wav_in)
+
     def btn1(self):
         self.remind_time.stop()
         self.record_time.stop()
+        self.request_time.stop()
+        self.reshow_time.stop()
         self.re = 1
         self.hide()
         # os.system(self.wav_out)
@@ -618,6 +639,8 @@ class WindowClass(QMainWindow, form_class):
     def btn2(self):
         self.remind_time.stop()
         self.record_time.stop()
+        self.request_time.stop()
+        self.reshow_time.stop()
         self.re = 2
         self.hide()
         # os.system(self.wav_out)
@@ -629,6 +652,8 @@ class WindowClass(QMainWindow, form_class):
     def btn3(self):
         self.remind_time.stop()
         self.record_time.stop()
+        self.request_time.stop()
+        self.reshow_time.stop()
         self.re = 3
         self.hide()
         # os.system(self.wav_out)
@@ -640,6 +665,8 @@ class WindowClass(QMainWindow, form_class):
     def btn4(self):
         self.remind_time.stop()
         self.record_time.stop()
+        self.request_time.stop()
+        self.reshow_time.stop()
         self.re = 4
         self.hide()
         # os.system(self.wav_out)
@@ -650,24 +677,24 @@ class WindowClass(QMainWindow, form_class):
 
     def remind(self):
         self.remind_time.stop()
+        self.record_time.start()
         playsound(self.wav_in)
 
     def record(self):
         self.record_time.stop()
+        self.request_time.stop()
         self.reshow_time.start()
         raw_data = [(time.time(), self.name, 0)]
         data = pd.DataFrame(raw_data, columns=self.df.columns)
         self.df = self.df.append(data)
         self.df.to_csv(f'{self.path}', index=False, encoding='utf-8-sig')
-        self.hide()
         playsound(self.wav_no_answer)
 
     def reshow(self):
         self.reshow_time.stop()
         self.remind_time.start()
-        self.record_time.start()
         playsound(self.wav_in)
-        self.show()
+
 
 
 # def play_audio(d_name, recv_conn, stop_event):
