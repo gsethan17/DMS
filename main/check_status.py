@@ -82,15 +82,15 @@ def check_driver(DRIVER_LIST):
     
     return DRIVER_NAME
 
-def check_odd():
+def check_odo():
     check_odd = 'n'
     while check_odd != 'y' :
         try:
-            ODD = input("[REQUEST] Enter current odometer : ")
-            check_odd = input("[REQUEST] Is current odometer {} km? [y/n] ".format(int(ODD)))
+            ODO = input("[REQUEST] Enter current odometer : ")
+            check_odd = input("[REQUEST] Is current odometer {} km? [y/n] ".format(int(ODO)))
         except:
             print("[INFO] Invalid input. Try again.")
-    return ODD
+    return ODO
 
 def check_intention():
     start_flag = 'n'

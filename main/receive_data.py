@@ -83,7 +83,8 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
     cycle = 0
     sync_thread()
     print(f"[INFO] '{d_name}' process starts recording.")
-    start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
+    st_time = time.time()
+    start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(st_time))
     while(True):
         try:
             can_msg = can_bus.recv()
@@ -119,8 +120,8 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
 
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
-            
-            print("WHL_SPD[{:08.5f}]  CYL_PRES[{:08.5f}]  SAS_Angle[{:08.5f}]".format(can_monitoring['WHL_SPD11'], can_monitoring['ESP12'], can_monitoring['SAS11']), end='\r')
+            record_time = str(dt.timedelta(seconds=(st - st_time))).split(".")[0]
+            print("[INFO] TIME[{}] WHL_SPD[{:7.2f}] CYL_PRES[{:7.2f}] SAS_Angle[{:7.2f}]".format(record_time, can_monitoring['WHL_SPD11'], can_monitoring['ESP12'], can_monitoring['SAS11']), end='\r')
             time_total += (time.time() - st)
             cycle += 1
         
@@ -154,30 +155,33 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     ### ...from Camera 1 ###
     pipeline_1 = rs.pipeline()
     config_1 = rs.config()
+
+    fps = 15
     # config_1.enable_device("102422072555")
     config_1.enable_device("043322071182")
-    config_1.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config_1.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-    config_1.enable_stream(rs.stream.infrared, 1, 1280, 720, rs.format.y8, 30)
+    config_1.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, fps)
+    config_1.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, fps)
+    config_1.enable_stream(rs.stream.infrared, 1, 1280, 720, rs.format.y8, fps)
 
     ### ...from Camera 2 ###
     pipeline_2 = rs.pipeline()
     config_2 = rs.config()
     # config_2.enable_device('043322071182')
     config_2.enable_device('102422072555')
-    config_2.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config_2.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-    config_2.enable_stream(rs.stream.infrared, 2, 1280, 720, rs.format.y8, 30)
+    config_2.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, fps)
+    config_2.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, fps)
+    config_2.enable_stream(rs.stream.infrared, 2, 1280, 720, rs.format.y8, fps)
     
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    colorVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'color_front2.avi', fourcc, 30.0, (1280, 720))
-    # depthVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'depth_front2.avi', fourcc, 30.0, (1280, 720))
-    irVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'ir_front2.avi', fourcc, 30.0, (1280, 720))
+    # fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+    colorVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'color_front2.avi', fourcc, float(fps), (1280, 720))
+    # depthVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'depth_front2.avi', fourcc, float(fps), (1280, 720))
+    irVideo1 = cv2.VideoWriter(FRONT_VIDEO_PATH + 'ir_front2.avi', fourcc, float(fps), (1280, 720))
 
-    colorVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'color_side2.avi', fourcc, 30.0, (1280, 720))
-    # depthVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'depth_side2.avi', fourcc, 30.0, (1280, 720))
-    irVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'ir_side2.avi', fourcc, 30.0, (1280, 720))
+    colorVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'color_side2.avi', fourcc, float(fps), (1280, 720))
+    # depthVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'depth_side2.avi', fourcc, float(fps), (1280, 720))
+    irVideo2 = cv2.VideoWriter(SIDE_VIDEO_PATH + 'ir_side2.avi', fourcc, float(fps), (1280, 720))
 
 
     ### Start streaming from both cameras ###
@@ -229,13 +233,12 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     try:
         while True:
             
-            ### Wait for a coh` erent pair of frames: depth and color ###
+            ### Wait for a coherent pair of frames: depth and color ###
             df = df[0:0]
             # print("pipeline1")
             frames_1 = pipeline_1.wait_for_frames()
             # print("pipeline2")
             frames_2 = pipeline_2.wait_for_frames()
-            
             df = df.append({'timestamp': time.time()}, ignore_index=True)
             if df_flag:
                 df.to_csv(VIDEO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
@@ -251,7 +254,6 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             
             
             if not depth_frame_1 or not color_frame_1 or not ir_frame_1:
-            # if not color_frame_1:
                 print("error")
                 continue
 
@@ -300,7 +302,7 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
             colorVideo2.write(color_image_2)
             # depthVideo2.write(depth_image_2)
             irVideo2.write(ir_img_2)
-
+            
             # dp_color_1 = cv2.resize(color_image_1, (500,400))
             # dp_color_2 = cv2.resize(color_image_2, (500,400))
             
@@ -331,7 +333,7 @@ def receive_video(d_name, DATASET_PATH, send_conn, stop_event):
     except Exception as e:
         print(e)
     finally:
-        print("Stop Streaming")
+        # print("Stop Streaming")
         ### Stop streaming ###
         pipeline_1.stop()
         pipeline_2.stop()
@@ -547,7 +549,6 @@ class WindowClass(QMainWindow, form_class):
         self.request_time = QTimer()
         # self.reshow_time.setInterval(240000)
         self.request_time.setInterval(50000)
-        print('show')
         self.setGeometry(0, 0, 1024, 1300)
         
         pal = QPalette()

@@ -16,7 +16,7 @@ from playsound import playsound
 
 def main():
     from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass #, receive_HMI
-    from check_status import check_driving_cycle, check_velocity, check_driver, check_odd, check_intention
+    from check_status import check_driving_cycle, check_velocity, check_driver, check_odo, check_intention
     
     ###  CAN setting  ###
     CAN_basePath = '../dbc'
@@ -64,19 +64,19 @@ def main():
     DRIVER_NAME = check_driver(DRIVER_LIST)
 
     
-    ### START ODDMETRY CHECK ###
-    START_ODD = check_odd()
+    ### START ODOMETRY CHECK ###
+    START_ODO = check_odo()
 
     ### DATASET path setting ###
     # DATASET_PATH = "/media/imlab/62C1-3A4A/DMS_dataset_usb/"
-    DATASET_PATH = "/media/imlab/483C8EA13C8E8A20/dms/"
+    DATASET_PATH = "/media/imlab/새 볼륨/dms_dataset/"
     if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
         os.mkdir(DATASET_PATH + DRIVER_NAME)
     DATASET_PATH += (DRIVER_NAME + "/")
     
-    if not os.path.isdir(DATASET_PATH + START_ODD):
-        os.mkdir(DATASET_PATH + START_ODD)
-    DATASET_PATH += START_ODD
+    if not os.path.isdir(DATASET_PATH + START_ODO):
+        os.mkdir(DATASET_PATH + START_ODO)
+    DATASET_PATH += START_ODO
     
     #####################    
     
@@ -131,7 +131,7 @@ def main():
     myWindow = WindowClass(DRIVER_NAME, DATASET_PATH)
     myWindow.show()
 
-    terminate_signal = input("[REQUEST] Press 'Enter' if you want to terminate every processes.")
+    terminate_signal = input("[REQUEST] Press 'Enter' if you want to terminate every processes.\n\n")
     while terminate_signal != '':
         print("[REQUEST] Invalid input! Press 'Enter'")
         terminate_signal = input()
@@ -150,10 +150,10 @@ def main():
     time.sleep(0.5)
 
 
-    ### END ODDMETRY CHECK ###
-    END_ODD = check_odd()
-    odd_df = pd.DataFrame([(START_ODD, END_ODD)], columns=["START", "END"])
-    odd_df.to_csv(f"{DATASET_PATH}/START_END_ODD.csv")
+    ### END ODOMETRY CHECK ###
+    END_ODO = check_odo()
+    odo_df = pd.DataFrame([(START_ODO, END_ODO, int(END_ODO) - int(START_ODO))], columns=["START", "END", "TOTAL"])
+    odo_df.to_csv(f"{DATASET_PATH}/START_END_TOTAL_{int(END_ODO) - int(START_ODO)}km.csv")
     
     
     print("[INFO] Main process finished.")
