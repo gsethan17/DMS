@@ -69,7 +69,7 @@ def main():
 
     ### DATASET path setting ###
     # DATASET_PATH = "/media/imlab/62C1-3A4A/DMS_dataset_usb/"
-    DATASET_PATH = "/media/imlab/새 볼륨/dms_dataset/"
+    DATASET_PATH = "/media/imlab/Samsung_T5/dms_dataset/"
     if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
         os.mkdir(DATASET_PATH + DRIVER_NAME)
     DATASET_PATH += (DRIVER_NAME + "/")
