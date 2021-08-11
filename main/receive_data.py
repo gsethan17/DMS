@@ -58,40 +58,41 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
     P_msg_name = []
     C_msg_name = []
 
-    P_msg_list = 
+    P_msg_list = ['CGW1', 'EMS2', 'EBS1', 'ESP12', 'SAS11', 'WHL_SPD11', 'HCU3']
+    C_msg_list = ['CGW1', 'CGW2', 'CGW_USM2', 'CLU12', 'CLU13', 'CLU15', 'ESP11', 'ESP12', 'HEV_PC1', 'HEV_PC12', 'HEV_PC2', 'HEV_PC4', 'HEV_PC5', 'HEV_PC6', 'NAVI_ISLW', 'NAVI_ISLW2', 'NAVI_STD_POS_E', 'NAVI_STD_SEG_E', 'SAS11', 'WHL_SPD11']
 
     MSG_LENGTH = 0
     for msg in P_db.messages:
         # P_msg_name.append(msg.name)
         # db_msg.append(msg)
-        if msg.name == 'CGW1':
+        if msg.name in P_msg_list :
             db_msg.append(msg)
             P_msg_name.append(msg.name)
             MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'EMS2':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'EBS1':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'ESP12':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'SAS11':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'WHL_SPD11':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
-        elif msg.name == 'HCU3':
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'EMS2':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'EBS1':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'ESP12':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'SAS11':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'WHL_SPD11':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
+#         elif msg.name == 'HCU3':
+#             db_msg.append(msg)
+#             P_msg_name.append(msg.name)
+#             MSG_LENGTH += len(msg.signals)
     for msg in C_db.messages:
         # C_msg_name.append(msg.name)
         # db_msg.append(msg)
@@ -99,7 +100,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
         #     db_msg.append(msg)
         #     C_msg_name.append(msg.name)
         #     MSG_LENGTH += len(msg.signals)
-        if msg.name == 'HEV_PC4' :
+        if msg.name in C_msg_list :
             db_msg.append(msg)
             C_msg_name.append(msg.name)
             MSG_LENGTH += len(msg.signals)
