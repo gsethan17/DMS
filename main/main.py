@@ -21,7 +21,8 @@ def main():
     ###  CAN setting  ###
     CAN_basePath = '../dbc'
     P_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_P_CAN_KOOKMIN_20210527.dbc')
-    C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
+    # C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
+    C_db = cantools.database.load_file(CAN_basePath + '/KOOKMIN_2ND_C_CAN.dbc')
     can_bus = can.interface.Bus('can0', bustype='socketcan')
     #####################
 

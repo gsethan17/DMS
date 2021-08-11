@@ -55,25 +55,55 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
         os.mkdir(CAN_PATH)
 
     db_msg = []
+    P_msg_name = []
+    C_msg_name = []
+
+    P_msg_list = 
+
+    MSG_LENGTH = 0
     for msg in P_db.messages:
+        # P_msg_name.append(msg.name)
+        # db_msg.append(msg)
         if msg.name == 'CGW1':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'EMS2':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'EBS1':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'ESP12':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'SAS11':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'WHL_SPD11':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
         elif msg.name == 'HCU3':
             db_msg.append(msg)
+            P_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
     for msg in C_db.messages:
-        if msg.name == 'NAVI_STD_SEG_E':
+        # C_msg_name.append(msg.name)
+        # db_msg.append(msg)
+        # if msg.name == 'NAVI_STD_SEG_E':
+        #     db_msg.append(msg)
+        #     C_msg_name.append(msg.name)
+        #     MSG_LENGTH += len(msg.signals)
+        if msg.name == 'HEV_PC4' :
             db_msg.append(msg)
-    
+            C_msg_name.append(msg.name)
+            MSG_LENGTH += len(msg.signals)
+    print("MSG_LENGTH:", MSG_LENGTH)
     # df = pd.DataFrame(columns=['timestamp'])
     df = pd.DataFrame(columns=['timestamp', 'timestamp2'])
     can_monitoring = {'ESP12': -1, 'SAS11': -1, 'WHL_SPD11': -1}
@@ -89,15 +119,20 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
         try:
             can_msg = can_bus.recv()
             df['timestamp2'] = time.time()
-            # print(f"can_time[{can_msg.timestamp}] linux_time[{df['timestamp2'][cycle]}]", end='r')
-            # print(f"can_time[{can_msg.timestamp}]", end='\r')
             st = time.time()
             for msg in db_msg:
                 if can_msg.arbitration_id == msg.frame_id:
-                    can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
-                    # can_dict['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(time.time()))
+                    if msg.name in P_msg_name :
+                        can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
+                    elif msg.name in C_msg_name :
+                        can_dict = C_db.decode_message(can_msg.arbitration_id, can_msg.data)
+                    
                     can_dict['timestamp'] = can_msg.timestamp
-                    if len(df.columns) >= 48:
+                    # df = df.append(can_dict, ignore_index=True)
+                    # df = df[0:0]
+                    # cnt += 1
+                    # print("can len:", len(df.columns))
+                    if len(df.columns) >= 58:
                         if first:
                             df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
                             first = False
@@ -116,8 +151,6 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                         can_monitoring['ESP12'] = can_dict['CYL_PRES']
                     elif msg.name == 'SAS11':
                         can_monitoring['SAS11'] = can_dict['SAS_Angle']
-                        # send_can.send(can_dict['SAS_Angle'])
-
                     elif msg.name == 'WHL_SPD11':
                         can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
             record_time = str(dt.timedelta(seconds=(st - st_time))).split(".")[0]
@@ -134,7 +167,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
             if stop_event.is_set():
                 break
 
-    print(f"[INFO] # of CAN[{cnt}] MEAN_TIME[{time_total / cycle:.6f}] CYCLE[{cycle}]")
+    print(f"[INFO] pid[{os.getpid()}] '{d_name}' # of CAN[{cnt}] MEAN_TIME[{time_total / cycle:.6f}] CYCLE[{cycle}]")
     print(f"[INFO] pid[{os.getpid()}] '{d_name}' process is terminated.")
 
 
