@@ -6,6 +6,7 @@ import time
 import sys
 import pandas as pd
 import os
+import configparser
 
 
 from PyQt5.QtWidgets import *
@@ -14,7 +15,7 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 from playsound import playsound
 
-def main():
+def main(save_path, version):
     from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass #, receive_HMI
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odo, check_intention
     
@@ -70,7 +71,8 @@ def main():
 
     ### DATASET path setting ###
     # DATASET_PATH = "/media/imlab/62C1-3A4A/DMS_dataset_usb/"
-    DATASET_PATH = "/media/imlab/Samsung_T5/dms_dataset/"
+    DATASET_PATH = save_path
+    # DATASET_PATH = "../../test/dms_dataset/"
     if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
         os.mkdir(DATASET_PATH + DRIVER_NAME)
     DATASET_PATH += (DRIVER_NAME + "/")
@@ -153,7 +155,7 @@ def main():
 
     ### END ODOMETRY CHECK ###
     END_ODO = check_odo()
-    odo_df = pd.DataFrame([(START_ODO, END_ODO, int(END_ODO) - int(START_ODO))], columns=["START", "END", "TOTAL"])
+    odo_df = pd.DataFrame([(START_ODO, END_ODO, int(END_ODO) - int(START_ODO), version)], columns=["START", "END", "TOTAL", "VERSION"])
     odo_df.to_csv(f"{DATASET_PATH}/START_END_TOTAL_{int(END_ODO) - int(START_ODO)}km.csv")
     
     
@@ -163,6 +165,13 @@ def main():
 
     
 if __name__ == "__main__":
+    config = configparser.ConfigParser()
+    config.read('./config.ini')
+
+    
+    VERSION = config['VERSION']['version']
+    SAVE_PATH = config['PATH']['SAVE_PATH']
+
     app = QApplication(sys.argv)
-    main()
+    main(SAVE_PATH, VERSION)
     # QCoreApplication.instance().quit

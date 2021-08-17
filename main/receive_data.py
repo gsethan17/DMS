@@ -104,7 +104,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
             db_msg.append(msg)
             C_msg_name.append(msg.name)
             MSG_LENGTH += len(msg.signals)
-    print("MSG_LENGTH:", MSG_LENGTH)
+    # print("MSG_LENGTH:", MSG_LENGTH)
     # df = pd.DataFrame(columns=['timestamp'])
     df = pd.DataFrame(columns=['timestamp', 'timestamp2'])
     can_monitoring = {'ESP12': -1, 'SAS11': -1, 'WHL_SPD11': -1}
@@ -133,7 +133,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                     # df = df[0:0]
                     # cnt += 1
                     # print("can len:", len(df.columns))
-                    if len(df.columns) >= 58:
+                    if len(df.columns) >= 139:
                         if first:
                             df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
                             first = False
