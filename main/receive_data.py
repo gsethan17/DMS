@@ -58,17 +58,17 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
     P_msg_name = []
     C_msg_name = []
 
-    P_msg_list = ['CGW1', 'EMS2', 'EBS1', 'ESP12', 'SAS11', 'WHL_SPD11', 'HCU3']
-    C_msg_list = ['CGW1', 'CGW2', 'CGW_USM2', 'CLU12', 'CLU13', 'CLU15', 'ESP11', 'ESP12', 'HEV_PC1', 'HEV_PC12', 'HEV_PC2', 'HEV_PC4', 'HEV_PC5', 'HEV_PC6', 'NAVI_ISLW', 'NAVI_ISLW2', 'NAVI_STD_POS_E', 'NAVI_STD_SEG_E', 'SAS11', 'WHL_SPD11']
+    # P_msg_list = ['CGW1', 'EMS2', 'EBS1', 'ESP12', 'SAS11', 'WHL_SPD11', 'HCU3']
+    C_msg_list = ['HEV_PC1', 'HEV_PC2', 'HEV_PC4', 'HEV_PC5','HEV_PC6', 'HEV_PC12', 'SAS11', 'ESP12', 'WHL_SPD11', 'CGW1', 'CLU12', 'CLU15']
 
     MSG_LENGTH = 0
-    for msg in P_db.messages:
-        # P_msg_name.append(msg.name)
-        # db_msg.append(msg)
-        if msg.name in P_msg_list :
-            db_msg.append(msg)
-            P_msg_name.append(msg.name)
-            MSG_LENGTH += len(msg.signals)
+    # for msg in P_db.messages:
+    #     # P_msg_name.append(msg.name)
+    #     # db_msg.append(msg)
+    #     if msg.name in P_msg_list :
+    #         db_msg.append(msg)
+    #         P_msg_name.append(msg.name)
+    #         MSG_LENGTH += len(msg.signals)
 #         elif msg.name == 'EMS2':
 #             db_msg.append(msg)
 #             P_msg_name.append(msg.name)
@@ -104,6 +104,13 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
             db_msg.append(msg)
             C_msg_name.append(msg.name)
             MSG_LENGTH += len(msg.signals)
+    C_signal_names = ['CF_Ems_EngStat', 'CR_Brk_StkDep_Pc', 'CR_Ems_AccPedDep_Pc', 'CR_Ems_EngSpd_rpm', 'CR_Ems_FueCon_uL', 'CR_Ems_VehSpd_Kmh', \
+                        'CF_Tcu_TarGe', 'SAS_Angle', 'CYL_PRES', 'CYL_PRES_FLAG', 'LAT_ACCEL', 'LONG_ACCEL', 'YAW_RATE', \
+                        'WHL_SPD_FL', 'WHL_SPD_FR', 'WHL_SPD_RL', 'WHL_SPD_RR', 'BAT_SOC', 'CF_Gway_HeadLampHigh', 'CF_Gway_HeadLampLow', \
+                        'CR_Hcu_HigFueEff_Pc', 'CR_Hcu_NorFueEff_Pc', 'CF_Hcu_DriveMode', 'CR_Fatc_OutTempSns_C', 'CR_Hcu_EcoLvl', \
+                        'CR_Hcu_FuelEco_MPG', 'CR_Hcu_HevMod', 'CF_Ems_BrkForAct', 'CR_Ems_EngColTemp_C', 'CF_Clu_InhibitD', 'CF_Clu_InhibitN', \
+                        'CF_Clu_InhibitP', 'CF_Clu_InhibitR', 'CF_Clu_VehicleSpeed', 'CF_Clu_Odometer']
+    
     # print("MSG_LENGTH:", MSG_LENGTH)
     # df = pd.DataFrame(columns=['timestamp'])
     df = pd.DataFrame(columns=['timestamp', 'timestamp2'])
@@ -119,21 +126,24 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
     while(True):
         try:
             can_msg = can_bus.recv()
-            df['timestamp2'] = time.time()
+            timestamp2 = time.time()
             st = time.time()
             for msg in db_msg:
                 if can_msg.arbitration_id == msg.frame_id:
-                    if msg.name in P_msg_name :
-                        can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
-                    elif msg.name in C_msg_name :
-                        can_dict = C_db.decode_message(can_msg.arbitration_id, can_msg.data)
-                    
+                    # if msg.name in P_msg_name :
+                    #     can_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
+                    # if msg.name in C_msg_name :
+                    can_dict = C_db.decode_message(can_msg.arbitration_id, can_msg.data)
+                    can_dict = {k: v for k, v in can_dict.items() if k in C_signal_names}
                     can_dict['timestamp'] = can_msg.timestamp
+                    can_dict['timestamp2'] = timestamp2
+
                     # df = df.append(can_dict, ignore_index=True)
                     # df = df[0:0]
                     # cnt += 1
                     # print("can len:", len(df.columns))
-                    if len(df.columns) >= 139:
+
+                    if len(df.columns) >= len(can_dict):
                         if first:
                             df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
                             first = False
