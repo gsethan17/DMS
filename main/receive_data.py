@@ -110,7 +110,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                         'CR_Hcu_HigFueEff_Pc', 'CR_Hcu_NorFueEff_Pc', 'CF_Hcu_DriveMode', 'CR_Fatc_OutTempSns_C', 'CR_Hcu_EcoLvl', \
                         'CR_Hcu_FuelEco_MPG', 'CR_Hcu_HevMod', 'CF_Ems_BrkForAct', 'CR_Ems_EngColTemp_C', 'CF_Clu_InhibitD', 'CF_Clu_InhibitN', \
                         'CF_Clu_InhibitP', 'CF_Clu_InhibitR', 'CF_Clu_VehicleSpeed', 'CF_Clu_Odometer']
-    
+    # print(len(C_signal_names))
     # print("MSG_LENGTH:", MSG_LENGTH)
     # df = pd.DataFrame(columns=['timestamp'])
     df = pd.DataFrame(columns=['timestamp', 'timestamp2'])
@@ -141,9 +141,9 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                     # df = df.append(can_dict, ignore_index=True)
                     # df = df[0:0]
                     # cnt += 1
-                    # print("can len:", len(df.columns))
+                    print("can len:", len(df.columns))
 
-                    if len(df.columns) >= len(can_dict):
+                    if len(df.columns) >= len(C_signal_names) + 2:
                         if first:
                             df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
                             first = False

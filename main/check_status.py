@@ -14,7 +14,7 @@ def check_driving_cycle(P_db, can_bus):
     while True:
         can_msg = can_bus.recv()
         if can_msg.arbitration_id == CGW_CAN.frame_id:
-            CGW_dict = P_db.decode_message(can_msg.arbitration_id, can_msg.data)
+            CGW_dict =P_db.decode_message(can_msg.arbitration_id, can_msg.data)
             if CGW_dict['CF_Gway_IGNSw'] == 'IGN':
                 cycle_cnt += 1
                 start_flag = True

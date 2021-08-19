@@ -20,10 +20,10 @@ def main(save_path, version):
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odo, check_intention
     
     ###  CAN setting  ###
-    CAN_basePath = '../dbc'
-    P_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_P_CAN_KOOKMIN_20210527.dbc')
+    CAN_basePath = os.path.join(save_path, 'dbc')
+    P_db = cantools.database.load_file(os.path.join(CAN_basePath, 'P_CAN.dbc'))
     # C_db = cantools.database.load_file(CAN_basePath + '/AE_PE_2nd_Gen_2CH_C_CAN_KOOKMIN_20210527.dbc')
-    C_db = cantools.database.load_file(CAN_basePath + '/KOOKMIN_2ND_C_CAN.dbc')
+    C_db = cantools.database.load_file(os.path.join(CAN_basePath, 'C_CAN.dbc'))
     can_bus = can.interface.Bus('can0', bustype='socketcan')
     #####################
 
