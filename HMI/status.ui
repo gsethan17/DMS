@@ -16,10 +16,10 @@
   <widget class="QPushButton" name="btn_1">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>300</y>
-     <width>471</width>
-     <height>471</height>
+     <x>100</x>
+     <y>680</y>
+     <width>351</width>
+     <height>261</height>
     </rect>
    </property>
    <property name="font">
@@ -37,10 +37,10 @@
   <widget class="QPushButton" name="btn_4">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>810</y>
-     <width>471</width>
-     <height>471</height>
+     <x>580</x>
+     <y>680</y>
+     <width>361</width>
+     <height>261</height>
     </rect>
    </property>
    <property name="font">
@@ -58,10 +58,10 @@
   <widget class="QPushButton" name="btn_3">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>810</y>
-     <width>471</width>
-     <height>471</height>
+     <x>380</x>
+     <y>900</y>
+     <width>271</width>
+     <height>341</height>
     </rect>
    </property>
    <property name="font">
@@ -76,26 +76,13 @@
     <string>슬픔/피곤</string>
    </property>
   </widget>
-  <widget class="QLabel" name="lbl_driver">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>191</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="lbl_image">
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>130</y>
+     <y>0</y>
      <width>1021</width>
-     <height>171</height>
+     <height>1301</height>
     </rect>
    </property>
    <property name="text">
@@ -105,10 +92,10 @@
   <widget class="QPushButton" name="btn_2">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>300</y>
-     <width>471</width>
-     <height>471</height>
+     <x>380</x>
+     <y>380</y>
+     <width>271</width>
+     <height>341</height>
     </rect>
    </property>
    <property name="font">
@@ -126,9 +113,8 @@
   <zorder>lbl_image</zorder>
   <zorder>btn_1</zorder>
   <zorder>btn_4</zorder>
-  <zorder>btn_3</zorder>
-  <zorder>lbl_driver</zorder>
   <zorder>btn_2</zorder>
+  <zorder>btn_3</zorder>
  </widget>
  <resources/>
  <connections/>

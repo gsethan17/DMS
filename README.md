@@ -4,6 +4,9 @@ Driver Monitoring System
 ## Updates Histopy
 * TBD: v0.0 will be released soon.
 
+## Build environments
+* sudo apt install ffmpeg
+
 ## Data application lists
 * Driver affective state
   - [x] Affective state of the driver self-reported through the HMI systems.

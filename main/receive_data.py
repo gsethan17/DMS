@@ -141,7 +141,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                     # df = df.append(can_dict, ignore_index=True)
                     # df = df[0:0]
                     # cnt += 1
-                    print("can len:", len(df.columns))
+                    # print("can len:", len(df.columns))
 
                     if len(df.columns) >= len(C_signal_names) + 2:
                         if first:
@@ -491,47 +491,19 @@ class check_response(QDialog):
         check_response_ui = '../HMI/check.ui'
         uic.loadUi(check_response_ui, self)
         self.setWindowTitle('알림')
-
+        
         if self.parent.re == 1:
-            self.btn_re.setText(f'{parent.btn_1.text()}')
-            self.btn_re.setStyleSheet("color: black;"
-                                     "border-style: solid;"
-                                     "border-width: 3px;"
-                                     "background-color: #fa8d87;"
-                                     "border-color: #f7453b;"
-                                     "border-radius: 3px")
+            self.btn_re.setStyleSheet(f"background-image: url(../HMI/{self.parent.re}.png);"
+                                      "background-color: #FF816E;")
         elif self.parent.re == 2:
-            self.btn_re.setText(f'{parent.btn_2.text()}')
-            self.btn_re.setStyleSheet("color: black;"
-                                     "border-style: solid;"
-                                     "border-width: 3px;"
-                                     "background-color: #fcdcae;"
-                                     "border-color: #f79914;"
-                                     "border-radius: 3px")
+            self.btn_re.setStyleSheet(f"background-image: url(../HMI/{self.parent.re}.png);"
+                                      "background-color: #FFBC8D;")
         elif self.parent.re == 3:
-            self.btn_re.setText(f'{parent.btn_3.text()}')
-            self.btn_re.setStyleSheet("color: black;"
-                                     "border-style: solid;"
-                                     "border-width: 3px;"
-                                     "background-color: #87CEFA;"
-                                     "border-color: #4a7ac2;"
-                                     "border-radius: 3px")
+            self.btn_re.setStyleSheet(f"background-image: url(../HMI/{self.parent.re}.png);"
+                                      "background-color: #C0E8FF;")
         else:
-            self.btn_re.setText(f'{parent.btn_4.text()}')
-            self.btn_re.setStyleSheet("color: black;"
-                                     "border-style: solid;"
-                                     "border-width: 3px;"
-                                     "background-color: #ebf0c0;"
-                                     "border-color: #c4d900;"
-                                     "border-radius: 3px")
-
-        self.btn_re.setFont(QFont("Gulim",40))
-        self.lbl_re.setStyleSheet("color: red;"
-                                 "border-style: solid;"
-                                 "border-width: 2px;"
-                                 "background-color: #fcbdbd;"
-                                 "border-color: #FA8072;"
-                                 "border-radius: 3px")
+            self.btn_re.setStyleSheet(f"background-image: url(../HMI/{self.parent.re}.png);"
+                                      "background-color: #FFEC95;")
 
         self.show()
 
@@ -596,9 +568,19 @@ class WindowClass(QMainWindow, form_class):
         self.setGeometry(0, 0, 1024, 1300)
         
         pal = QPalette()
-        pal.setColor(QPalette.Background,QColor(0, 0, 0))
-        
-        self.lbl_driver.setFont(QFont("Gulim",44))
+        pal.setColor(QPalette.Background,QColor(45, 45, 45))
+        opacity_effect1 = QGraphicsOpacityEffect(self.btn_1)
+        opacity_effect1.setOpacity(0)
+        self.btn_1.setGraphicsEffect(opacity_effect1)
+        opacity_effect2 = QGraphicsOpacityEffect(self.btn_2)
+        opacity_effect2.setOpacity(0)
+        self.btn_2.setGraphicsEffect(opacity_effect2)
+        opacity_effect3 = QGraphicsOpacityEffect(self.btn_3)
+        opacity_effect3.setOpacity(0)
+        self.btn_3.setGraphicsEffect(opacity_effect3)
+        opacity_effect4 = QGraphicsOpacityEffect(self.btn_4)
+        opacity_effect4.setOpacity(0)
+        self.btn_4.setGraphicsEffect(opacity_effect4)
         self.setPalette(pal)
 
         if os.path.exists(self.path + self.filename):
@@ -618,44 +600,12 @@ class WindowClass(QMainWindow, form_class):
         self.setWindowTitle('기록중')
         self.setWindowModality(2)
         self.show()
-        self.lbl_driver.setText(self.name)
-        pixmap = QPixmap('../HMI/캡처.PNG')
+        pixmap = QPixmap('../HMI/status.png')
         self.lbl_image.setPixmap(QPixmap(pixmap))
         self.btn_1.clicked.connect(self.btn1)
         self.btn_2.clicked.connect(self.btn2)
         self.btn_3.clicked.connect(self.btn3)
         self.btn_4.clicked.connect(self.btn4)
-
-        self.lbl_driver.setStyleSheet("color: black;"
-                                      "border-style: solid;"
-                                      "border-width: 3px;"
-                                      "background-color: #87CEFA;"
-                                      "border-color: #1E90FF;"
-                                      "border-radius: 3px")
-        self.btn_1.setStyleSheet("color: black;"
-                                 "border-style: solid;"
-                                 "border-width: 3px;"
-                                 "background-color: #fa8d87;"
-                                 "border-color: #f7453b;"
-                                 "border-radius: 3px")
-        self.btn_2.setStyleSheet("color: black;"
-                                 "border-style: solid;"
-                                 "border-width: 3px;"
-                                 "background-color: #fcdcae;"
-                                 "border-color: #f79914;"
-                                 "border-radius: 3px")
-        self.btn_3.setStyleSheet("color: black;"
-                                 "border-style: solid;"
-                                 "border-width: 3px;"
-                                 "background-color: #87CEFA;"
-                                 "border-color: #4a7ac2;"
-                                 "border-radius: 3px")
-        self.btn_4.setStyleSheet("color: black;"
-                                 "border-style: solid;"
-                                 "border-width: 3px;"
-                                 "background-color: #ebf0c0;"
-                                 "border-color: #c4d900;"
-                                 "border-radius: 3px")
 
         self.remind_time.timeout.connect(self.remind)
         self.record_time.timeout.connect(self.record)
