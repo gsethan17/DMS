@@ -141,7 +141,7 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event)
                     # df = df.append(can_dict, ignore_index=True)
                     # df = df[0:0]
                     # cnt += 1
-                    print("can len:", len(df.columns))
+                    # print("can len:", len(df.columns))
 
                     if len(df.columns) >= len(C_signal_names) + 2:
                         if first:
