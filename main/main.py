@@ -17,7 +17,7 @@ from playsound import playsound
 
 def main(save_path, version):
     from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, receive_sensor, WindowClass #, receive_HMI
-    from check_status import check_driving_cycle, check_velocity, check_driver, check_odo, check_intention
+    from check_status import check_driving_cycle, check_velocity, check_driver, check_odometer, check_intention
     
     ###  CAN setting  ###
     CAN_basePath = os.path.join(save_path, 'dbc')
@@ -67,7 +67,7 @@ def main(save_path, version):
 
     
     ### START ODOMETRY CHECK ###
-    START_ODO = check_odo()
+    START_ODO = check_odometer(C_db, can_bus)
 
     ### DATASET path setting ###
     # DATASET_PATH = "/media/imlab/62C1-3A4A/DMS_dataset_usb/"
@@ -154,7 +154,7 @@ def main(save_path, version):
 
 
     ### END ODOMETRY CHECK ###
-    END_ODO = check_odo()
+    END_ODO = check_odometer(C_db, can_bus)
     odo_df = pd.DataFrame([(START_ODO, END_ODO, int(END_ODO) - int(START_ODO), version)], columns=["START", "END", "TOTAL", "VERSION"])
     odo_df.to_csv(f"{DATASET_PATH}/START_END_TOTAL_{int(END_ODO) - int(START_ODO)}km.csv")
     
