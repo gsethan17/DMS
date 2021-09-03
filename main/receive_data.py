@@ -1,5 +1,6 @@
 # import threading
 import multiprocessing
+from multiprocessing.process import parent_process
 import time
 import datetime as dt
 import os
@@ -524,7 +525,7 @@ class check_response(QDialog):
 
     def record_csv(self):
         self.clicked_time.stop()
-        raw_data = [(time.time(), self.parent.name, self.parent.re)]
+        raw_data = [(self.parent.time, self.parent.name, self.parent.re)]
         data = pd.DataFrame(raw_data, columns=self.parent.df.columns)
         self.parent.df = self.parent.df.append(data)
         self.parent.df.to_csv(f'{self.PATH}', index=False, encoding='utf-8-sig')
@@ -552,6 +553,7 @@ class WindowClass(QMainWindow, form_class):
 
         self.start_time = time.strftime("%Y_%m_%d_%H_%M", time.localtime(time.time()))
         self.filename = self.start_time + '.csv'
+        self.time = 0
 
         self.remind_time = QTimer()
         self.remind_time.setInterval(10000)
@@ -619,6 +621,7 @@ class WindowClass(QMainWindow, form_class):
         playsound(self.wav_in)
 
     def btn1(self):
+        self.time = time.time()
         self.remind_time.stop()
         self.record_time.stop()
         self.request_time.stop()
@@ -632,6 +635,7 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn2(self):
+        self.time = time.time()
         self.remind_time.stop()
         self.record_time.stop()
         self.request_time.stop()
@@ -645,6 +649,7 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn3(self):
+        self.time = time.time()
         self.remind_time.stop()
         self.record_time.stop()
         self.request_time.stop()
@@ -658,6 +663,7 @@ class WindowClass(QMainWindow, form_class):
         check_response(self, self.path)
 
     def btn4(self):
+        self.time = time.time()
         self.remind_time.stop()
         self.record_time.stop()
         self.request_time.stop()
@@ -673,23 +679,29 @@ class WindowClass(QMainWindow, form_class):
     def remind(self):
         self.remind_time.stop()
         self.record_time.start()
+        self.hide()
         playsound(self.wav_in)
+        self.show()
 
     def record(self):
+        self.hide()
+        self.time = time.time()
+        playsound(self.wav_no_answer)
         self.record_time.stop()
         self.request_time.stop()
         self.reshow_time.start()
-        raw_data = [(time.time(), self.name, 0)]
+        raw_data = [(self.time, self.name, 0)]
         data = pd.DataFrame(raw_data, columns=self.df.columns)
         self.df = self.df.append(data)
         self.df.to_csv(f'{self.path}', index=False, encoding='utf-8-sig')
-        playsound(self.wav_no_answer)
+        self.show()
 
     def reshow(self):
-        self.reshow_time.stop()
+        self.reshow_tme.stop()
         self.remind_time.start()
+        self.hide()
         playsound(self.wav_in)
-
+        self.show()
 
 
 # def play_audio(d_name, recv_conn, stop_event):

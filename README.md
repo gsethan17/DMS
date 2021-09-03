@@ -3,6 +3,7 @@ Driver Monitoring System
 
 ## Updates Histopy
 * TBD: v0.0 will be released soon.
+- v0.1.1 (Update date : 2021/09/03) : Change HMI UI, modify the timestamp recording point of HMI input, add a way to go back to the starting point when identifying a driver, and change the way to get odometer from manually to automatically.
 
 ## Build environments
 * sudo apt install ffmpeg
