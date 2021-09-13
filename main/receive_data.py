@@ -697,7 +697,7 @@ class WindowClass(QMainWindow, form_class):
         self.show()
 
     def reshow(self):
-        self.reshow_tme.stop()
+        self.reshow_time.stop()
         self.remind_time.start()
         self.hide()
         playsound(self.wav_in)
