@@ -32,7 +32,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 ### These variables are used in receive_data.py to sync threads ###
-TOTAL_THREADS_NUM = multiprocessing.Value('d', 4) ### Add 1 each time a sensor is added. ###
+TOTAL_THREADS_NUM = multiprocessing.Value('d', 3) ### Add 1 each time a sensor is added. ###
 thread_count = multiprocessing.Value('d', 0)
 
 lock = multiprocessing.Lock()

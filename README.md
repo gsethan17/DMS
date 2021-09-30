@@ -5,6 +5,7 @@ Driver Monitoring System
 * v0.0 : Initial version        [Released Data : 2021-07-01]
 * v0.1 : CAN signal update      [Released Data : 2021-08-20]
 * v0.2 : HMI & odometer update  [Release Data : 2021-09-13]
+* v0.2.1 : Audio synchronization test branch [Release Data : 2021-09-30]
 
 ## Build environments
 * sudo apt install ffmpeg

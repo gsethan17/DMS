@@ -34,10 +34,10 @@ def main(save_path, version):
     
     
     ### Audio setting ###
-    FORMAT = pyaudio.paInt16
-    RATE = 44100
-    CHANNELS = 1
-    CHUNK = 1024
+    # FORMAT = pyaudio.paInt16
+    # RATE = 44100
+    # CHANNELS = 1
+    # CHUNK = 1024
     #####################
     
     
@@ -92,16 +92,16 @@ def main(save_path, version):
     # audio_send, audio_recv = multiprocessing.Pipe()
 
     # data_names = ['CAN', 'audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
-    data_names = ['audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
-    # proc_functions = [receive_CAN, receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
-    proc_functions = [receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
-    func_args = {#'CAN': (P_db, C_db, can_bus),
-                # 'video': (send_conn),
-                # 'video_visual': (recv_conn),
-                'audio': (FORMAT, RATE, CHANNELS, CHUNK),
-                # 'sensor': (),
-                # 'HMI': [DRIVER_NAME],
-                }
+    # data_names = ['audio']#, 'HMI']#'video', 'video_visual', 'audio']#, 'sensor']
+    # # proc_functions = [receive_CAN, receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
+    # proc_functions = [receive_audio] #, receive_HMI]# receive_video, visualize_video, receive_audio]#, receive_sensor]
+    # func_args = {#'CAN': (P_db, C_db, can_bus),
+    #             # 'video': (send_conn),
+    #             # 'video_visual': (recv_conn),
+    #             'audio': (FORMAT, RATE, CHANNELS, CHUNK),
+    #             # 'sensor': (),
+    #             # 'HMI': [DRIVER_NAME],
+    #             }
 
     #####################
     
@@ -114,9 +114,9 @@ def main(save_path, version):
     
 
     ### Process generation ###
-    for d_name, proc_func in zip(data_names, proc_functions):
-        proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
-        procs.append(proc)
+    # for d_name, proc_func in zip(data_names, proc_functions):
+    #     proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
+    #     procs.append(proc)
     proc = multiprocessing.Process(target=receive_CAN, args=('CAN', DATASET_PATH, P_db, C_db, can_bus, send_can, stop_event))
     procs.append(proc)
     proc = multiprocessing.Process(target=receive_video, args=('video', DATASET_PATH, send_conn, stop_event))
