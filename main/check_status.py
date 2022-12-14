@@ -11,7 +11,7 @@ def check_driving_cycle(P_db, can_bus):
             CGW_CAN = msg
     cycle_cnt = 0
     start_flag = False
-    
+
     while True:
         can_msg = can_bus.recv()
         if can_msg.arbitration_id == CGW_CAN.frame_id:
@@ -26,6 +26,7 @@ def check_driving_cycle(P_db, can_bus):
         if cycle_cnt >= 10:
             print("[INFO] Done.")
             break
+
 
 def check_velocity(P_db, can_bus):
     print("[INFO] Check velocity...")
@@ -50,10 +51,11 @@ def check_velocity(P_db, can_bus):
                 spd_flag = True
 
         if spd_cnt >= 10:
-            print("[INFO] done.")
+            print("[INFO] Done.")
             break
 
-def check_driver(DRIVER_LIST):    
+
+def check_driver(DRIVER_LIST):
     check_name = ''
     check_id = ''
     check_input_name = ''
@@ -132,11 +134,55 @@ def check_driver(DRIVER_LIST):
             check_input_name = ''
             continue
         if DRIVER_NAME in DRIVER_LIST:
-            # print(DRIVER_LIST)
             break
+
+        # while True:
+        #     driver_weight = input("[REQEUST] Weight? (Back to the list => Press 'b') :")
+        #     # if driver_weight == 'b':
+        #         # continue
+        #     if driver_weight != 'b' and driver_weight.isnumeric():
+        #         # driver_weight = int(driver_weight)
+        #         break
+        #     else:
+        #         print("[INFO] Invalid input. Try again.")
+        #         continue
 
 
     return DRIVER_NAME
+
+def check_weight():
+    while True:
+        weight = input("[REQEUST] How much do you weight? (Back to the list => Press 'b') :")
+        if weight == 'b':
+            break
+        elif weight != 'b' and weight.isnumeric():
+            weight = int(weight)
+            break
+        else:
+            print("[INFO] Invalid input. Try again.")
+            continue
+
+    return weight
+
+def check_passenger():
+    print("[INFO] Check passenger...")
+    pass_pos = ['FR', 'RL', 'RR']
+    pass_weights = []
+    for i in range(len(pass_pos)):
+        while True:
+            pass_weight = input("[REQEUST] How much weight on {} seat? (Back to the list => Press 'b') :".format(pass_pos[i]))
+            if pass_weight == 'b':
+                break
+            elif pass_weight != 'b' and pass_weight.isnumeric():
+                pass_weight = int(pass_weight)
+                pass_weights.append(pass_weight)
+                break
+            else:
+                print("[INFO] Invalid input. Try again.")
+                continue
+
+    return pass_weights
+
 
 def check_odometer(C_db, can_bus):
     print("[INFO] Check odometer...")
@@ -145,9 +191,7 @@ def check_odometer(C_db, can_bus):
     for msg in C_db.messages:
         if msg.name == 'CLU12':
             CLU_CAN = msg
-    cycle_cnt = 0
-    start_flag = False
-    
+
     while True:
         can_msg = can_bus.recv()
         if can_msg.arbitration_id == CLU_CAN.frame_id:
@@ -156,7 +200,7 @@ def check_odometer(C_db, can_bus):
             print(f"[INFO] Currunt odometer : {ODOMETER} km")
             break
     return ODOMETER
-     
+
 
 def check_intention():
     start_flag = 'n'
