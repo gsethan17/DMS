@@ -68,23 +68,23 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_even
     data = []
     flag = False
     
-    df = pd.DataFrame(columns=['timestamp'])
-    df_flag = 1
+    # df = pd.DataFrame(columns=['timestamp'])
+    # df_flag = 1
 
     sync_thread()
     print(f"[INFO] '{d_name}' process starts recording.")
     start_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
     while True:
         try:
-            df = df[0:0]
+            # df = df[0:0]
             audio = stream.read(CHUNK)
             
-            df = df.append({'timestamp': time.time()}, ignore_index=True)
-            if df_flag:
-                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
-                df_flag = 0
-            else:
-                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
+            # df = df.append({'timestamp': time.time()}, ignore_index=True)
+            # if df_flag:
+            #     df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
+            #     df_flag = 0
+            # else:
+            #     df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
 
             frame = np.fromstring(audio, dtype = np.int16)
 
