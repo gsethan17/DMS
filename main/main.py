@@ -20,6 +20,7 @@ from config import config
 def main():
     from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, WindowClass #, receive_HMI
     from receive_GNSS import receive_GNSS
+    from receive_external_video import receive_usb_cam
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odometer, check_intention, check_passenger, check_weight
     # from config import config
 
@@ -30,6 +31,7 @@ def main():
     start_time = time.time()
 
     version = config['VERSION']
+    save_flag = config['MEASUREMENT']
     save_path = config['SAVE_PATH']
     driver_list = config['DRIVER_LIST']
     data_config = config['DATA']
@@ -49,6 +51,8 @@ def main():
     ### Video setting ###
     frontView = config['DATA']['INSIDE_FRONT_CAMERA']
     sideView = config['DATA']['INSIDE_SIDE_CAMERA']
+    outFrontCenterView = config['DATA']['OUTSIDE_FRONT_CENTER_CAMERA']
+    usbCam_show = config['external_video']['show']
     #####################y
 
 
@@ -86,15 +90,15 @@ def main():
     START_ODO = check_odometer(C_db, can_bus)
 
     ### DATASET path setting ###
+    if save_flag:
+        DATASET_PATH = save_path + 'data/'
+        # if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
+            # os.mkdir(DATASET_PATH + DRIVER_NAME)
+        # DATASET_PATH += (DRIVER_NAME + "/")
 
-    DATASET_PATH = save_path + 'data/'
-    # if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
-        # os.mkdir(DATASET_PATH + DRIVER_NAME)
-    # DATASET_PATH += (DRIVER_NAME + "/")
-
-    if not os.path.isdir(DATASET_PATH + START_ODO):
-        os.makedirs(DATASET_PATH + START_ODO)
-    DATASET_PATH += START_ODO
+        if not os.path.isdir(DATASET_PATH + START_ODO):
+            os.makedirs(DATASET_PATH + START_ODO)
+        DATASET_PATH += START_ODO
     #####################
 
 
@@ -103,12 +107,14 @@ def main():
     stop_event = multiprocessing.Event()
     send_conn, recv_conn = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'audio', 'video', 'GNSS'] # 'video_visaulizer'
-    proc_functions = [receive_CAN, receive_audio, receive_video, receive_GNSS] # visualize_video
+    data_names = ['CAN', 'audio', 'video', 'GNSS', 'out_video'] # 'video_visaulizer'
+    proc_functions = [receive_CAN, receive_audio, receive_video, receive_GNSS,
+                      receive_usb_cam] # visualize_video
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
                 'video': (frontView, sideView, send_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
+                'out_video': (outFrontCenterView, usbCam_show),
                 # 'video_visual': (recv_conn),
                 }
 
@@ -123,13 +129,15 @@ def main():
 
     ### Process generation ###
     for d_name, proc_func in zip(data_names, proc_functions):
-        if d_name != 'video':
-            if not data_config[d_name]:
+        if d_name == 'video':
+            if not save_flag:
                 continue
-        else:
             if not frontView and not sideView:
                 continue
-        proc = multiprocessing.Process(target=proc_func, args=(d_name, DATASET_PATH, *func_args[d_name], stop_event))
+        else:
+            if not data_config[d_name]:
+                continue
+        proc = multiprocessing.Process(target=proc_func, args=(d_name, save_flag, DATASET_PATH, *func_args[d_name], stop_event))
         procs.append(proc)
 
     for proc in procs:
@@ -167,7 +175,8 @@ def main():
     ### END ODOMETRY CHECK ###
     END_ODO = check_odometer(C_db, can_bus)
     odo_df = pd.DataFrame([(START_ODO, END_ODO, int(END_ODO) - int(START_ODO), version)], columns=["START", "END", "TOTAL", "VERSION"])
-    odo_df.to_csv(f"{DATASET_PATH}/START_END_TOTAL_{int(END_ODO) - int(START_ODO)}km.csv")
+    if save_flag:
+        odo_df.to_csv(f"{DATASET_PATH}/START_END_TOTAL_{int(END_ODO) - int(START_ODO)}km.csv")
 
     end_time = time.time()
     ########## UTC to KST ###########
@@ -177,30 +186,31 @@ def main():
     end_time_KST = end_time.strftime('%Y-%m-%d %H:%M:%S')
 
     ###### to txt drivier info #########
-    info_path = os.path.join(save_path, 'info.txt')
+    if save_flag:
+        info_path = os.path.join(save_path, 'info.txt')
 
-    f = open(info_path, 'a')
-    string_time = start_time_KST
-    ending_time = end_time_KST
+        f = open(info_path, 'a')
+        string_time = start_time_KST
+        ending_time = end_time_KST
 
-    info = string_time+','
-    info += ending_time+','
-    info += str(START_ODO) + ','
-    info += str(END_ODO) + ','
-    info += DRIVER_NAME + ','
-    info += str(DRIVER_WEIGHT) + ','
-    for wei in PASSENGER_WEIGHTS:
-        info += str(wei) + ','
-    info += str(HMI_flag) + ','
-    info += str(CAN_flag) + ','
-    info += str(frontView) + ','
-    info += str(sideView) + ','
-    info += str(config['DATA']['audio']) + ','
-    info += str(config['DATA']['GNSS']) + ','
-    info += str(receive_trf_info) + '\n'
+        info = string_time+','
+        info += ending_time+','
+        info += str(START_ODO) + ','
+        info += str(END_ODO) + ','
+        info += DRIVER_NAME + ','
+        info += str(DRIVER_WEIGHT) + ','
+        for wei in PASSENGER_WEIGHTS:
+            info += str(wei) + ','
+        info += str(HMI_flag) + ','
+        info += str(CAN_flag) + ','
+        info += str(frontView) + ','
+        info += str(sideView) + ','
+        info += str(config['DATA']['audio']) + ','
+        info += str(config['DATA']['GNSS']) + ','
+        info += str(receive_trf_info) + '\n'
 
-    f.write(info)
-    f.close()
+        f.write(info)
+        f.close()
 
     # read
 

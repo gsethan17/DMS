@@ -1,5 +1,5 @@
 config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
-          'VERSION': 'v1.0.0',
+          'VERSION': 'v1.1.0',
           'DRIVER_LIST': ["Sejoon", "Geesung", "Taesan", "Euiseok",\
                           "Hyeongoo", "Rakcheol", "Youngjun"],
           'CAN': {'inference': False,
@@ -12,6 +12,8 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
                     # '''
                    'print_gnss_status': False},
 
+          'external_video': {'show': True},
+
           # '''
           # Set False if you do not want to collect specific data.
           # '''
@@ -19,11 +21,14 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
                    'CAN': True,
                    'INSIDE_FRONT_CAMERA': True,
                    'INSIDE_SIDE_CAMERA': True,
+                   'OUTSIDE_FRONT_CENTER_CAMERA': True,
                    'audio': False,
                    'GNSS' : True,
                   #  '''
                   #  TRAFFIC_INFO must be collected with GNSS
                   #  '''
                    'TRAFFIC_INFO': True,
-          }
+          },
+
+          'MEASUREMENT':True
 }

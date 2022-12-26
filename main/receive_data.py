@@ -47,12 +47,13 @@ def sync_process():
         pass
 
 
-def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, print_status, stop_event):
+def receive_CAN(d_name, save_flag, DATASET_PATH, P_db, C_db, can_bus, print_status, stop_event):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
 
     CAN_PATH = DATASET_PATH + '/CAN/'
-    if not os.path.isdir(CAN_PATH):
-        os.mkdir(CAN_PATH)
+    if save_flag:
+        if not os.path.isdir(CAN_PATH):
+            os.mkdir(CAN_PATH)
 
     db_msg = []
     P_msg_name = []
@@ -110,11 +111,12 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, print_status, stop_ev
                     can_dict['timestamp2'] = timestamp2
 
                     if len(df.columns) >= len(C_signal_names) + len(timestamp_cols):
-                        if first:
-                            df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
-                            first = False
-                        else:
-                            df.to_csv(CAN_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
+                        if save_flag:
+                            if first:
+                                df.to_csv(CAN_PATH + f"{start_time}.csv", index=False)
+                                first = False
+                            else:
+                                df.to_csv(CAN_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
 
                         cnt += 1
                         df = df[0:0]
@@ -148,20 +150,21 @@ def receive_CAN(d_name, DATASET_PATH, P_db, C_db, can_bus, print_status, stop_ev
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is terminated.")
 
 
-def receive_video(d_name, DATASET_PATH, frontView, sideView, send_conn, stop_event):
+def receive_video(d_name, save_flag, DATASET_PATH, frontView, sideView, send_conn, stop_event):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
 
-    VIDEO_PATH = DATASET_PATH + '/video/'
-    if not os.path.isdir(VIDEO_PATH):
-        os.mkdir(VIDEO_PATH)
-    if sideView:
-        SIDE_VIDEO_PATH = VIDEO_PATH + 'SideView/'
-        if not os.path.isdir(SIDE_VIDEO_PATH):
-            os.mkdir(SIDE_VIDEO_PATH)
-    if frontView:
-        FRONT_VIDEO_PATH = VIDEO_PATH + "FrontView/"
-        if not os.path.isdir(FRONT_VIDEO_PATH):
-            os.mkdir(FRONT_VIDEO_PATH)
+    VIDEO_PATH = DATASET_PATH + '/video/internal/'
+    if save_flag:
+        if not os.path.isdir(VIDEO_PATH):
+            os.makedirs(VIDEO_PATH)
+        if sideView:
+            SIDE_VIDEO_PATH = VIDEO_PATH + 'SideView/'
+            if not os.path.isdir(SIDE_VIDEO_PATH):
+                os.makedirs(SIDE_VIDEO_PATH)
+        if frontView:
+            FRONT_VIDEO_PATH = VIDEO_PATH + "FrontView/"
+            if not os.path.isdir(FRONT_VIDEO_PATH):
+                os.makedirs(FRONT_VIDEO_PATH)
 
     ### Configure depth and color streams... ###
     fps = 15
@@ -365,12 +368,13 @@ def visualize_video(d_name, DATASET_PATH, recv_conn, stop_event):
     pass
 
 
-def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_event):
+def receive_audio(d_name, save_flag, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_event):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
 
     AUDIO_PATH = DATASET_PATH + '/audio/'
-    if not os.path.isdir(AUDIO_PATH):
-        os.mkdir(AUDIO_PATH)
+    if save_flag:
+        if not os.path.isdir(AUDIO_PATH):
+            os.mkdir(AUDIO_PATH)
 
     p = pyaudio.PyAudio()
     stream = p.open(
@@ -402,11 +406,12 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_even
             audio = stream.read(CHUNK)
 
             df = df.append({'timestamp': time.time()}, ignore_index=True)
-            if df_flag:
-                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
-                df_flag = 0
-            else:
-                df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
+            if save_flag:
+                if df_flag:
+                    df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=True, index=False)
+                    df_flag = 0
+                else:
+                    df.to_csv(AUDIO_PATH + f"{start_time}.csv", mode='a', header=False, index=False)
 
             frame = np.fromstring(audio, dtype = np.int16)
 
@@ -444,7 +449,8 @@ def receive_audio(d_name, DATASET_PATH, FORMAT, RATE, CHANNELS, CHUNK, stop_even
         else :
             data = np.concatenate((data, dic[key]), axis = None)
 
-    write(f"{AUDIO_PATH + start_time}.wav", RATE, data.astype(np.int16))
+    if save_flag:
+        write(f"{AUDIO_PATH + start_time}.wav", RATE, data.astype(np.int16))
 
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is terminated.")
 

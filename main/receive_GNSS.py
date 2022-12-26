@@ -78,17 +78,18 @@ def save_df(df, save_path, first):
     return first
 
 
-def receive_GNSS(d_name, SAVE_PATH, config=None, print_status=True, receive_trf_info=False, stop_event=None):
+def receive_GNSS(d_name, save_flag, SAVE_PATH, config=None, print_status=True, receive_trf_info=False, stop_event=None):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
     # config = configparser.ConfigParser()
     # config.read('./config.ini')
 
     SAVE_PATH = pathlib.Path(SAVE_PATH)
     TRAFFIC_SAVE_PATH = SAVE_PATH / 'Traffic_info'
-    TRAFFIC_SAVE_PATH.mkdir(exist_ok=True, parents=True)
-
     SAVE_PATH = SAVE_PATH / 'GNSS'
-    SAVE_PATH.mkdir(exist_ok=True, parents=True)
+
+    if save_flag:
+        TRAFFIC_SAVE_PATH.mkdir(exist_ok=True, parents=True)
+        SAVE_PATH.mkdir(exist_ok=True, parents=True)
 
 
     ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.2)
@@ -173,18 +174,21 @@ def receive_GNSS(d_name, SAVE_PATH, config=None, print_status=True, receive_trf_
                                 if traffic_info is None:
                                     fail_type = 'req_failed'
                                     fail_data = traffic_info_failed_data(traffic_cols, timestamp, fail_type)
-                                    traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
+                                    if save_flag:
+                                        traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
 
                                 elif 'error' not in traffic_info.keys():
                                     traffic_data = get_traffic_info_from_dict(traffic_info)
                                     if traffic_data is not None:
                                         traffic_data = [[timestamp] + traffic_data]
                                         traffic_df = pd.DataFrame(traffic_data, columns=traffic_cols)
-                                        traffic_first = save_df(traffic_df, TRAFFIC_SAVE_PATH, traffic_first)
+                                        if save_flag:
+                                            traffic_first = save_df(traffic_df, TRAFFIC_SAVE_PATH, traffic_first)
                                     else:
                                         fail_type = 'req_failed'
                                         fail_data = traffic_info_failed_data(traffic_cols, timestamp, fail_type)
-                                        traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
+                                        if save_flag:
+                                            traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
 
                                 else:
                                     print("[INFO] Daily allocation is fully used. But no problem.\n")
@@ -196,7 +200,8 @@ def receive_GNSS(d_name, SAVE_PATH, config=None, print_status=True, receive_trf_
                                 # gnss_df = pd.merge(gnss_df, fail_data, how='outer', on='Timestamp')
                                 fail_type = 'full_alloc'
                                 fail_data = traffic_info_failed_data(traffic_cols, timestamp, fail_type)
-                                traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
+                                if save_flag:
+                                    traffic_first = save_df(fail_data, TRAFFIC_SAVE_PATH, traffic_first)
 
                         if print_status:
                             print(f"[INFO] Time[{timestamp[11:19]}] LAT[{record.latitude:.6f}] LON[{record.longitude:.6f}] ALT[{record.altitude:.2f}]", end='\r')
@@ -244,7 +249,8 @@ def receive_GNSS(d_name, SAVE_PATH, config=None, print_status=True, receive_trf_
                     tmp_df = pd.merge(tmp_df, mag_df, how='outer', on='Timestamp')
                     total_df = total_df[0:0]
                     total_df = total_df.append(tmp_df)
-                    first = save_df(total_df, SAVE_PATH, first)
+                    if save_flag:
+                        first = save_df(total_df, SAVE_PATH, first)
 
             except Exception as e:
                 # print('lat lon empty')
