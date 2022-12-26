@@ -6,13 +6,12 @@ Driver Monitoring System
 * v0.1 : CAN signal update      [Released Data : 2021-08-20]
 * v0.2 : HMI & odometer update  [Release Data : 2021-09-13]
 * v0.2.1 : Audio synchronization test branch [Release Data : 2021-09-30]
+* v1.0.0 : Real-time traffic info & GNSS (RTK) [Release Data : 2022-10-07]
 
 ## Build environments
 * sudo apt install ffmpeg
 
 ## Data application lists
-* Driver affective state
-  - [x] Affective state of the driver self-reported through the HMI systems.
 * Video
   - [x] RGB images of front view towards the driver (.avi)
   - [x] IR images of front view towards the driver (.avi)
@@ -51,6 +50,35 @@ Driver Monitoring System
   - [x] Inhibit_N   : Neutral Gear Status
   - [x] Inhibit_D   : Drive Gear Status
   - [x] Out_Temp    : Ambient Temperature (<sup>o</sup>C)
+* Real-time traffic information
+  - [x] LinkID            : TBD
+  - [x] LinkName          : TBD
+  - [x] Description       : TBD
+  - [x] Congestion        : TBD
+  - [x] TrafficUpdateTime : TBD
+  - [x] LinkDirection     : TBD
+  - [x] LinkRoadType      : TBD
+  - [x] StartNodeName     : TBD
+  - [x] EndNodeName       : TBD
+  - [x] LinkLength        : TBD
+  - [x] LinkPassTime      : TBD
+  - [x] LinkSpeed         : TBD
+* GNSS(Global Navigation Satellite System) w/RTK(Real Time Kinematic)
+  - [x] Latitude          : TBD
+  - [x] Longitude         : TBD
+  - [x] GPSMode           : TBD
+  - [x] SatelliteNum      : TBD
+  - [x] Altitude          : TBD
+  - [x] Yaw               : TBD
+  - [x] Pitch             : TBD
+  - [x] Roll              : TBD
+  - [x] TrueNorth         : TBD
+  - [x] NorthDeclination  : TBD
+
+
+▼▼▼▼▼▼▼▼ Deactivate data ▼▼▼▼▼▼▼▼ (please refer to [config file](./main/config.py))
+* Driver affective state
+  - [x] Affective state of the driver self-reported through the HMI systems.
 * Physiological data
   - [x] Temp : Skin temperature (<sup>o</sup>C)
   - [x] EDA : Electrodermal Activity (µS)
