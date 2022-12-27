@@ -7,20 +7,20 @@ Driver Monitoring System
 * v0.2 : HMI & odometer update  [Release Data : 2021-09-13]
 * v0.2.1 : Audio synchronization test branch [Release Data : 2021-09-30]
 * v1.0.0 : Real-time traffic info & GNSS (RTK) [Release Data : 2022-10-07]
-* v1.1.0 : Front-view external video [Release Data : TBD]
+* v1.1.0 : Front-view external video (Internal camera is a temporary suspension) [Release Data : 2022-12-27]
 
 ## Build environments
 * sudo apt install ffmpeg
 
 ## Data application lists
 * External Video
-  - [ ] RGB images of front view towards the vehicle heading (TBD)
+  - [x] RGB images of front view towards the vehicle heading (.png)
 * Internal Video
-  - [x] RGB images of front view towards the driver (.avi)
-  - [x] IR images of front view towards the driver (.avi)
+  - [ ] RGB images of front view towards the driver (.avi)
+  - [ ] IR images of front view towards the driver (.avi)
   - [ ] Depth images of front view towards the driver
-  - [x] RGB images of side view towards the driver (.avi)
-  - [x] IR images of side view towards the driver (.avi)
+  - [ ] RGB images of side view towards the driver (.avi)
+  - [ ] IR images of side view towards the driver (.avi)
   - [ ] Depth images of side view towards the driver
 * CAN data 
   - [x] A_Depth : Accel Pedal State (%)

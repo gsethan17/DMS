@@ -107,14 +107,14 @@ def main():
     stop_event = multiprocessing.Event()
     send_conn, recv_conn = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'audio', 'video', 'GNSS', 'out_video'] # 'video_visaulizer'
+    data_names = ['CAN', 'audio', 'video', 'GNSS', 'OUTSIDE_FRONT_CENTER_CAMERA'] # 'video_visaulizer'
     proc_functions = [receive_CAN, receive_audio, receive_video, receive_GNSS,
                       receive_usb_cam] # visualize_video
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
                 'video': (frontView, sideView, send_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
-                'out_video': (outFrontCenterView, usbCam_show),
+                'OUTSIDE_FRONT_CENTER_CAMERA': (outFrontCenterView, usbCam_show),
                 # 'video_visual': (recv_conn),
                 }
 
@@ -130,8 +130,8 @@ def main():
     ### Process generation ###
     for d_name, proc_func in zip(data_names, proc_functions):
         if d_name == 'video':
-            if not save_flag:
-                continue
+            # if not save_flag:
+                # continue
             if not frontView and not sideView:
                 continue
         else:
@@ -187,7 +187,7 @@ def main():
 
     ###### to txt drivier info #########
     if save_flag:
-        info_path = os.path.join(save_path, 'info.txt')
+        info_path = os.path.join(save_path, 'info.csv')
 
         f = open(info_path, 'a')
         string_time = start_time_KST
@@ -207,7 +207,8 @@ def main():
         info += str(sideView) + ','
         info += str(config['DATA']['audio']) + ','
         info += str(config['DATA']['GNSS']) + ','
-        info += str(receive_trf_info) + '\n'
+        info += str(receive_trf_info) + ','
+        info += str(outFrontCenterView) + '\n'
 
         f.write(info)
         f.close()

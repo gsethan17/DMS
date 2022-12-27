@@ -19,8 +19,8 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
           # '''
           'DATA': {'HMI': False,
                    'CAN': True,
-                   'INSIDE_FRONT_CAMERA': True,
-                   'INSIDE_SIDE_CAMERA': True,
+                   'INSIDE_FRONT_CAMERA': False,
+                   'INSIDE_SIDE_CAMERA': False,
                    'OUTSIDE_FRONT_CENTER_CAMERA': True,
                    'audio': False,
                    'GNSS' : True,
@@ -30,5 +30,5 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
                    'TRAFFIC_INFO': True,
           },
 
-          'MEASUREMENT':True
+          'MEASUREMENT': True
 }
