@@ -17,12 +17,25 @@ def receive_usb_cam(d_name, save_flag, DATASET_PATH, fc_view, flag_show, stop_ev
                 os.makedirs(PATH_FC)
 
     if fc_view:
-        cap = cv2.VideoCapture(12)
+        width = 1280 # 2594 # 1920 # 1280
+        height = 720 # 1944 # 1080 # 720
+        # fps = 30
+
+        cap = cv2.VideoCapture(6)
+
+        # cap.set(cv2.CAP_PROP_FPS, fps)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+        # print(cap.get(cv2.CAP_PROP_FPS))
+        # print(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        # print(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
         fps = cap.get(cv2.CAP_PROP_FPS)
         delay = int(1000/fps)
 
     try:
-        print(f"[INFO] PID[{os.getpid()}] '{d_name}' process starts collecting.")
+        print(f"[INFO] PID[{os.getpid()}] '{d_name}' process starts collecting. (w/{fps}fps)")
         while cap.isOpened():
             cur_time = time.time()
             flag, img = cap.read()
@@ -32,7 +45,8 @@ def receive_usb_cam(d_name, save_flag, DATASET_PATH, fc_view, flag_show, stop_ev
                 cv2.imwrite(PATH_FC + f"{cur_time}.png", img)
 
             if flag_show:
-                cv2.imshow('frame', img)
+                resize_img = cv2.resize(img, (int(width/2), int(height/2)))
+                cv2.imshow('frame', resize_img)
                 if 0xFF == ord('q'):
                     break
 

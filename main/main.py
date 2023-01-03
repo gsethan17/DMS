@@ -20,7 +20,7 @@ from config import config
 def main():
     from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, WindowClass #, receive_HMI
     from receive_GNSS import receive_GNSS
-    from receive_external_video import receive_usb_cam
+    from receive_image import receive_realsense
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odometer, check_intention, check_passenger, check_weight
     # from config import config
 
@@ -109,12 +109,12 @@ def main():
 
     data_names = ['CAN', 'audio', 'video', 'GNSS', 'OUTSIDE_FRONT_CENTER_CAMERA'] # 'video_visaulizer'
     proc_functions = [receive_CAN, receive_audio, receive_video, receive_GNSS,
-                      receive_usb_cam] # visualize_video
+                      receive_realsense] # visualize_video
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
                 'video': (frontView, sideView, send_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
-                'OUTSIDE_FRONT_CENTER_CAMERA': (outFrontCenterView, usbCam_show),
+                'OUTSIDE_FRONT_CENTER_CAMERA': ('external', 'FC', '102422073082'),
                 # 'video_visual': (recv_conn),
                 }
 

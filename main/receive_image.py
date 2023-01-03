@@ -1,11 +1,13 @@
 import os
 import pyrealsense2 as rs
+import pyrealsense2 as rs
+import numpy as np
+import cv2
+import time
 
-def receive_realsense(d_name, path, view, position, n_serial, stop_event):
-    FPS = 60
-    WIDTH = 1280
-    HEIGHT = 720
 
+
+def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_event):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
 
     save_path = os.path.join(path, 'video', view, position)
@@ -13,31 +15,18 @@ def receive_realsense(d_name, path, view, position, n_serial, stop_event):
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    pipe = rs.pipeline()
-    config = rs.config()
-
-    config.enable_device(n_serial)
-    config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
-    # config.enable_stream(rs.stream.infrared, 1, 1280, 720, rs.format.y8, fps)
-    # config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, fps)
-
-    profile = pipe.start(config)
-    try:
-        for i in range(0, 100):
-            frames = pipe.wait_for_frames()
-            for f in frames:
-                print(f.profile)
-    finally:
-        pipe.stop()
-
-def opencv_viewer_exmaple():
-    import pyrealsense2 as rs
-    import numpy as np
-    import cv2
+    FPS = 60
+    WIDTH = 424
+    HEIGHT = 240
+    # n_serial = "043322071182"
 
     # Configure depth and color streams
     pipeline = rs.pipeline()
     config = rs.config()
+
+    config.enable_device(n_serial)
+    # config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
+    # config.enable_device("043322071182")
 
     # Get device product line for setting a supporting resolution
     pipeline_wrapper = rs.pipeline_wrapper(pipeline)
@@ -54,12 +43,13 @@ def opencv_viewer_exmaple():
         print("The demo requires Depth camera with Color sensor")
         exit(0)
 
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+    # \config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+    # config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
 
     if device_product_line == 'L500':
         config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
     else:
-        config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+        config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
 
     # Start streaming
     pipeline.start(config)
@@ -69,45 +59,68 @@ def opencv_viewer_exmaple():
 
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
-            depth_frame = frames.get_depth_frame()
+            cur_time = time.time()
+            # depth_frame = frames.get_depth_frame()
+            depth_frame = True
             color_frame = frames.get_color_frame()
             if not depth_frame or not color_frame:
                 continue
 
             # Convert images to numpy arrays
-            depth_image = np.asanyarray(depth_frame.get_data())
+            # depth_image = np.asanyarray(depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
 
             # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-            depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+            # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
-            depth_colormap_dim = depth_colormap.shape
-            color_colormap_dim = color_image.shape
+            # depth_colormap_dim = depth_colormap.shape
+            # color_colormap_dim = color_image.shape
 
             # If depth and color resolutions are different, resize color image to match depth image for display
-            if depth_colormap_dim != color_colormap_dim:
-                resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
-                images = np.hstack((resized_color_image, depth_colormap))
-            else:
-                images = np.hstack((color_image, depth_colormap))
+            # if depth_colormap_dim != color_colormap_dim:
+                # resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
+                # images = np.hstack((resized_color_image, depth_colormap))
+            # else:
+                # images = np.hstack
+
+            # Save images
+            cv2.imwrite(os.path.join(save_path, f"{cur_time}.png"), color_image)
 
             # Show images
+            resize_img = cv2.resize(color_image, (640, 480))
+
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', images)
+            cv2.imshow('RealSense', resize_img)
             cv2.waitKey(1)
+
+            if stop_event:
+                if stop_event.is_set():
+                    break
 
     finally:
 
         # Stop streaming
         pipeline.stop()
+        print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is terminated.")
+
 
 if __name__ == '__main__':
-    # example()
-    
+
+    realsense_ctx = rs.context()  # The context encapsulates all of the devices and sensors, and provides some additional functionalities.
+    connected_devices = []
+
+    # get serial numbers of connected devices:
+    for i in range(len(realsense_ctx.devices)):
+        detected_camera = realsense_ctx.devices[i].get_info(
+        rs.camera_info.serial_number)
+        connected_devices.append(detected_camera)
+
+    print(connected_devices)
+
+    save_flag = True
     d_name = 'out_video'
     DATASET_PATH = os.getcwd()
     view = 'external'
     position = 'FC'
 
-    receive_realsense(d_name, DATASET_PATH, view, position, '10242207382', None)
-    
+    receive_realsense(d_name, save_flag, DATASET_PATH, view, position, '102422073082', None)
