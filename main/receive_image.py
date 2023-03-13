@@ -7,7 +7,7 @@ import time
 
 
 
-def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_event):
+def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, width, height, stop_event):
     print(f"[INFO] PID[{os.getpid()}] '{d_name}' process is started.")
 
     save_path = os.path.join(path, 'video', view, position)
@@ -15,9 +15,9 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_ev
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    FPS = 60
-    WIDTH = 424
-    HEIGHT = 240
+    FPS = fps
+    WIDTH = width
+    HEIGHT = height
     # n_serial = "043322071182"
 
     # Configure depth and color streams
@@ -50,6 +50,7 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_ev
         config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
     else:
         config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
+        config.enable_stream(rs.stream.infrared, 1, WIDTH, HEIGHT, rs.format.y8, FPS)
 
     # Start streaming
     pipeline.start(config)
@@ -60,18 +61,27 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_ev
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
             cur_time = time.time()
-            # depth_frame = frames.get_depth_frame()
-            depth_frame = True
+
             color_frame = frames.get_color_frame()
+            if view == 'internal':
+                # depth_frame = frames.get_depth_frame()
+                ir_frame = frames.get_infrared_frame()
+            else:
+                depth_frame = True
+
             if not depth_frame or not color_frame:
                 continue
 
             # Convert images to numpy arrays
-            # depth_image = np.asanyarray(depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
+            if view == 'internal':
+                ir_image = np.asanyarray(ir_frame.get_data())
+            # depth_image = np.asanyarray(depth_frame.get_data())
 
             # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
             # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+            if view == 'internal':
+                ir_image = cv2.cvtColor(ir_image, cv2.COLOR_GRAY2BGR)
 
             # depth_colormap_dim = depth_colormap.shape
             # color_colormap_dim = color_image.shape
@@ -85,12 +95,19 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, stop_ev
 
             # Save images
             cv2.imwrite(os.path.join(save_path, f"{cur_time}.png"), color_image)
+            if view == 'internal':
+                cv2.imwrite(os.path.join(save_path, f"{cur_time}_ir.png"), ir_image)
 
             # Show images
             resize_img = cv2.resize(color_image, (640, 480))
 
-            cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
+            cv2.namedWindow('{}_{}'.format(view, position), cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', resize_img)
+            
+            if view == 'internal':
+                resize_img_ir = cv2.resize(ir_image, (640, 480))
+                cv2.namedWindow('{}_{}_{}'.format(view, position, 'IR'), cv2.WINDOW_AUTOSIZE)
+                cv2.imshow('RealSense', resize_img_ir)
             cv2.waitKey(1)
 
             if stop_event:
