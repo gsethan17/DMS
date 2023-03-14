@@ -95,6 +95,10 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, wi
                 # images = np.hstack
 
             # Save images
+            if view == "internal":
+                if position == "SIDE":
+                    color_image = cv2.flip(cv2.flip(color_image, 1), 0)
+                    ir_image = cv2.flip(cv2.flip(ir_image, 1), 0)
             cv2.imwrite(os.path.join(save_path, f"{cur_time}.png"), color_image)
             if view == 'internal':
                 cv2.imwrite(os.path.join(save_path, f"{cur_time}_ir.png"), ir_image)
