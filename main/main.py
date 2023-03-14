@@ -18,7 +18,7 @@ from playsound import playsound
 from config import config
 
 def main():
-    from receive_data import receive_CAN, receive_video, visualize_video, receive_audio, WindowClass #, receive_HMI
+    from receive_data import receive_CAN, receive_audio, WindowClass #, receive_HMI
     from receive_GNSS import receive_GNSS
     from receive_image import receive_realsense
     from check_status import check_driving_cycle, check_velocity, check_driver, check_odometer, check_intention, check_passenger, check_weight
@@ -92,9 +92,6 @@ def main():
     ### DATASET path setting ###
     if save_flag:
         DATASET_PATH = save_path + 'data/'
-        # if not os.path.isdir(DATASET_PATH + DRIVER_NAME):
-            # os.mkdir(DATASET_PATH + DRIVER_NAME)
-        # DATASET_PATH += (DRIVER_NAME + "/")
 
         if not os.path.isdir(DATASET_PATH + START_ODO):
             os.makedirs(DATASET_PATH + START_ODO)
@@ -108,21 +105,18 @@ def main():
     send_conn, recv_conn = multiprocessing.Pipe()
 
     data_names = ['CAN', 'audio', 
-                #   'video', 
                   'GNSS', 
                   'INSIDE_FRONT_CAMERA',
                   'INSIDE_SIDE_CAMERA',
                   'OUTSIDE_FRONT_CENTER_CAMERA',
                   ] # 'video_visaulizer'
     proc_functions = [receive_CAN, receive_audio,
-                    #    receive_video, 
                       receive_GNSS,
                       receive_realsense,
                       receive_realsense,
                       receive_realsense,
                       ] # visualize_video
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
-                # 'video': (frontView, sideView, send_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
                 'INSIDE_FRONT_CAMERA': ('internal', 'CENTER', '043322071182', 6, 1280, 720),
@@ -142,14 +136,8 @@ def main():
 
     ### Process generation ###
     for d_name, proc_func in zip(data_names, proc_functions):
-        if d_name == 'video':
-            # if not save_flag:
-                # continue
-            if not frontView and not sideView:
-                continue
-        else:
-            if not data_config[d_name]:
-                continue
+        if not data_config[d_name]:
+            continue
         proc = multiprocessing.Process(target=proc_func, args=(d_name, save_flag, DATASET_PATH, *func_args[d_name], stop_event))
         procs.append(proc)
 
