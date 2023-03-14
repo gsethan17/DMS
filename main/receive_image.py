@@ -103,12 +103,12 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, wi
             resize_img = cv2.resize(color_image, (640, 480))
 
             cv2.namedWindow('{}_{}'.format(view, position), cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', resize_img)
+            cv2.imshow('{}_{}'.format(view, position), resize_img)
             
             if view == 'internal':
                 resize_img_ir = cv2.resize(ir_image, (640, 480))
                 cv2.namedWindow('{}_{}_{}'.format(view, position, 'IR'), cv2.WINDOW_AUTOSIZE)
-                cv2.imshow('RealSense', resize_img_ir)
+                cv2.imshow('{}_{}_{}'.format(view, position, 'IR'), resize_img_ir)
             cv2.waitKey(1)
 
             if stop_event:
