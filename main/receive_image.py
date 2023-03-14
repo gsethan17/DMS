@@ -68,9 +68,9 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, wi
                 # depth_frame = frames.get_depth_frame()
                 ir_frame = frames.get_infrared_frame()
             else:
-                depth_frame = True
+                ir_frame = True
 
-            if not depth_frame or not color_frame:
+            if not ir_frame or not color_frame:
                 continue
 
             # Convert images to numpy arrays
