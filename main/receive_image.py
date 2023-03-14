@@ -50,7 +50,8 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, wi
         config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
     else:
         config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
-        config.enable_stream(rs.stream.infrared, 1, WIDTH, HEIGHT, rs.format.y8, FPS)
+        if view == 'internal':
+            config.enable_stream(rs.stream.infrared, 1, WIDTH, HEIGHT, rs.format.y8, FPS)
 
     # Start streaming
     pipeline.start(config)
