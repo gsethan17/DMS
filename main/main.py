@@ -107,18 +107,22 @@ def main():
     stop_event = multiprocessing.Event()
     send_conn, recv_conn = multiprocessing.Pipe()
 
-    data_names = ['CAN', 'audio', 'video', 'GNSS', 
+    data_names = ['CAN', 'audio', 
+                #   'video', 
+                  'GNSS', 
                   'INSIDE_FRONT_CAMERA',
                   'INSIDE_SIDE_CAMERA',
                   'OUTSIDE_FRONT_CENTER_CAMERA',
                   ] # 'video_visaulizer'
-    proc_functions = [receive_CAN, receive_audio, receive_video, receive_GNSS,
+    proc_functions = [receive_CAN, receive_audio,
+                    #    receive_video, 
+                      receive_GNSS,
                       receive_realsense,
                       receive_realsense,
                       receive_realsense,
                       ] # visualize_video
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
-                'video': (frontView, sideView, send_conn),
+                # 'video': (frontView, sideView, send_conn),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
                 'INSIDE_FRONT_CAMERA': ('internal', 'CENTER', '043322071182', 6, 1280, 720),
