@@ -1,7 +1,7 @@
 config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
-          'VERSION': 'v1.1.0',
-          'DRIVER_LIST': ["Sejoon", "Geesung", "Taesan", "Euiseok",\
-                          "Hyeongoo", "Rakcheol", "Youngjun"],
+          'VERSION': 'v1.2.0',
+          'DRIVER_LIST': ["Sejoon", "Geesung",\
+                          "Rakcheol", "Youngjun"],
           'CAN': {'inference': False,
                   'print_can_status': True},
           'GNSS': {'trf_info_request_period': 10.0,
@@ -17,7 +17,7 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
           # '''
           # Set False if you do not want to collect specific data.
           # '''
-          'DATA': {'HMI': False,
+          'DATA': {'HMI': True,
                    'CAN': True,
                    'INSIDE_FRONT_CAMERA': True,
                    'INSIDE_SIDE_CAMERA': True,
