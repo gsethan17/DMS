@@ -60,7 +60,7 @@ def receive_CAN(d_name, save_flag, DATASET_PATH, P_db, C_db, can_bus, print_stat
     C_msg_name = []
 
     # P_msg_list = ['CGW1', 'EMS2', 'EBS1', 'ESP12', 'SAS11', 'WHL_SPD11', 'HCU3']
-    C_msg_list = ['HEV_PC1', 'HEV_PC2', 'HEV_PC4', 'HEV_PC5','HEV_PC6', 'HEV_PC12', 'SAS11', 'ESP12', 'WHL_SPD11', 'CGW1', 'CLU12', 'CLU15']
+    C_msg_list = ['HEV_PC1', 'HEV_PC2', 'HEV_PC4', 'HEV_PC5','HEV_PC6', 'HEV_PC12', 'SAS11', 'ESP12', 'WHL_SPD11', 'CGW1', 'CLU12', 'CLU15', 'BCW11']
 
 
     MSG_LENGTH = 0
@@ -80,7 +80,8 @@ def receive_CAN(d_name, save_flag, DATASET_PATH, P_db, C_db, can_bus, print_stat
                     'WHL_SPD_FL', 'WHL_SPD_FR', 'WHL_SPD_RL', 'WHL_SPD_RR', 'BAT_SOC', 'CF_Gway_HeadLampHigh', 'CF_Gway_HeadLampLow', \
                     'CR_Hcu_HigFueEff_Pc', 'CR_Hcu_NorFueEff_Pc', 'CF_Hcu_DriveMode', 'CR_Fatc_OutTempSns_C', 'CR_Hcu_EcoLvl', \
                     'CR_Hcu_FuelEco_MPG', 'CR_Hcu_HevMod', 'CF_Ems_BrkForAct', 'CR_Ems_EngColTemp_C', 'CF_Clu_InhibitD', 'CF_Clu_InhibitN', \
-                    'CF_Clu_InhibitP', 'CF_Clu_InhibitR', 'CF_Clu_VehicleSpeed', 'CF_Clu_Odometer']
+                    'CF_Clu_InhibitP', 'CF_Clu_InhibitR', 'CF_Clu_VehicleSpeed', 'CF_Clu_Odometer', \
+                    'CF_BCW_IndLeft', 'CF_BCW_IndRight']
 
     ### timestamp : timestamp from CAN device
     ### timestamp2 : timestamp from PC
@@ -133,9 +134,13 @@ def receive_CAN(d_name, save_flag, DATASET_PATH, P_db, C_db, can_bus, print_stat
                             can_monitoring['SAS11'] = can_dict['SAS_Angle']
                         elif msg.name == 'WHL_SPD11':
                             can_monitoring['WHL_SPD11'] = can_dict['WHL_SPD_FL']
+                        elif msg.name == 'BCW11':
+                            can_monitoring['IND_LEFT'] = can_dict['CF_BCW_IndLeft']
+                            can_monitoring['IND_RIGHT'] = can_dict['CF_BCW_IndRight']
             if print_status:
                 record_time = str(dt.timedelta(seconds=(st - st_time))).split(".")[0]
-                print("[INFO] TIME[{}] WHL_SPD[{:7.2f}] CYL_PRES[{:7.2f}] SAS_Angle[{:7.2f}]".format(record_time, can_monitoring['WHL_SPD11'], can_monitoring['ESP12'], can_monitoring['SAS11']), end='\r')
+                # print("[INFO] TIME[{}] WHL_SPD[{:7.2f}] CYL_PRES[{:7.2f}] SAS_Angle[{:7.2f}]".format(record_time, can_monitoring['WHL_SPD11'], can_monitoring['ESP12'], can_monitoring['SAS11']), end='\r')
+                print("[INFO] TIME[{}] IND_LEFT[{:7.2f}] IND_RIGHT[{:7.2f}] SAS_Angle[{:7.2f}]".format(record_time, can_monitoring['CF_BCW_IndLeft'], can_monitoring['CF_BCW_IndRight']), end='\r')
             time_total += (time.time() - st)
             cycle += 1
 
