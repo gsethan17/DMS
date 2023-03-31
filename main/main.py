@@ -119,9 +119,9 @@ def main():
     func_args = {'CAN': (P_db, C_db, can_bus, print_can_status),
                 'audio': (FORMAT, RATE, CHANNELS, CHUNK),
                 'GNSS': (config, print_gnss_status, receive_trf_info),
-                'INSIDE_FRONT_CAMERA': ('internal', 'CENTER', '043322071182', 6, 1280, 720),
-                'INSIDE_SIDE_CAMERA': ('internal', 'SIDE', '102422072555', 6, 1280, 720),
-                'OUTSIDE_FRONT_CENTER_CAMERA': ('external', 'FC', '102422073082', 60, 424, 240),
+                'INSIDE_FRONT_CAMERA': ('internal', 'CENTER', '043322071182', 30, 1920, 1080),
+                'INSIDE_SIDE_CAMERA': ('internal', 'SIDE', '102422072555', 30, 1920, 1080),
+                'OUTSIDE_FRONT_CENTER_CAMERA': ('external', 'FC', '102422073082', 60, 960, 540),
                 # 'video_visual': (recv_conn),
                 }
 

@@ -17,7 +17,7 @@ config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
           # '''
           # Set False if you do not want to collect specific data.
           # '''
-          'DATA': {'HMI': True,
+          'DATA': {'HMI': False, #Human Machine Interface
                    'CAN': True,
                    'INSIDE_FRONT_CAMERA': True,
                    'INSIDE_SIDE_CAMERA': True,

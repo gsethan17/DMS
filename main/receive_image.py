@@ -51,7 +51,11 @@ def receive_realsense(d_name, save_flag, path, view, position, n_serial, fps, wi
     else:
         config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
         if view == 'internal':
-            config.enable_stream(rs.stream.infrared, 1, WIDTH, HEIGHT, rs.format.y8, FPS)
+            config.enable_stream(rs.stream.infrared, 1, 1280, 720, rs.format.y8, FPS)
+            depth_sensor = pipeline_profile.get_device().query_sensors()[0]
+            depth_sensor.set_option(rs.option.emitter_enabled, False)
+            depth_sensor.set_option(rs.option.enable_auto_exposure, True)
+            # depth_sensor.set_option(rs.option.visual_preset, 2)
 
     # Start streaming
     pipeline.start(config)
