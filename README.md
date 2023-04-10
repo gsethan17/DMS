@@ -2,12 +2,13 @@
 Driver Monitoring System
 
 ## Updates Histopy
-* v0.0 : Initial version        [Released Data : 2021-07-01]
-* v0.1 : CAN signal update      [Released Data : 2021-08-20]
-* v0.2 : HMI & odometer update  [Release Data : 2021-09-13]
-* v0.2.1 : Audio synchronization test branch [Release Data : 2021-09-30]
-* v1.0.0 : Real-time traffic info & GNSS (RTK) [Release Data : 2022-10-07]
-* v1.1.0 : Front-view external video (Internal camera is a temporary suspension) [Release Data : 2022-12-27]
+* v0.0 : Initial version        [Released Date : 2021-07-01]
+* v0.1 : CAN signal update      [Released Date : 2021-08-20]
+* v0.2 : HMI & odometer update  [Release Date : 2021-09-13]
+* v0.2.1 : Audio synchronization test branch [Release Date : 2021-09-30]
+* v1.0.0 : Real-time traffic info & GNSS (RTK) [Release Date : 2022-10-07]
+* v1.1.0 : Front-view external video (Internal camera is a temporary suspension) [Release Date : 2022-12-27]
+* v1.2.0 : Replace the internal cameras with the RealSense Cameras [Release Date : 2023-03-31]
 
 ## Build environments
 * sudo apt install ffmpeg
@@ -16,11 +17,11 @@ Driver Monitoring System
 * External Video
   - [x] RGB images of front view towards the vehicle heading (.png)
 * Internal Video
-  - [ ] RGB images of front view towards the driver (.avi)
-  - [ ] IR images of front view towards the driver (.avi)
+  - [x] RGB images of front view towards the driver (.png)
+  - [x] IR images of front view towards the driver (.png)
   - [ ] Depth images of front view towards the driver
-  - [ ] RGB images of side view towards the driver (.avi)
-  - [ ] IR images of side view towards the driver (.avi)
+  - [x] RGB images of side view towards the driver (.png)
+  - [x] IR images of side view towards the driver (.png)
   - [ ] Depth images of side view towards the driver
 * CAN data 
   - [x] A_Depth : Accel Pedal State (%)
