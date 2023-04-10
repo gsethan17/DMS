@@ -9,6 +9,7 @@ Driver Monitoring System
 * v1.0.0 : Real-time traffic info & GNSS (RTK) [Release Date : 2022-10-07]
 * v1.1.0 : Front-view external video (Internal camera is a temporary suspension) [Release Date : 2022-12-27]
 * v1.2.0 : Replace the internal cameras with the RealSense Cameras [Release Date : 2023-03-31]
+* v1.3.0 : Add left & right indicator signals to CAN signal [Release Date : 2023-04-10]
 
 ## Build environments
 * sudo apt install ffmpeg
@@ -54,6 +55,8 @@ Driver Monitoring System
   - [x] Inhibit_N   : Neutral Gear Status
   - [x] Inhibit_D   : Drive Gear Status
   - [x] Out_Temp    : Ambient Temperature (<sup>o</sup>C)
+  - [x] IndLeft	    : Indicator signal for left  
+  - [x] IndRight    : Indicator signal for right  
 * Real-time traffic information
   - [x] LinkID            : TBD
   - [x] LinkName          : TBD

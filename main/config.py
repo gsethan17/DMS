@@ -1,7 +1,7 @@
 config = {'SAVE_PATH': '/media/imlab/Samsung_T5/dms_rev1/',
-          'VERSION': 'v1.2.0',
+          'VERSION': 'v1.3.0',
           'DRIVER_LIST': ["Sejoon", "Geesung",\
-                          "Rakcheol", "Youngjun"],
+                          "Rakcheol", "Youngjun", "Seungyeob"],
           'CAN': {'inference': False,
                   'print_can_status': True},
           'GNSS': {'trf_info_request_period': 10.0,
